@@ -114,7 +114,8 @@ function itemHTML(id, nombreLocal, extra = '') {
 
 // Nombre de habilidad en TU cliente (addon) o es-MX por defecto
 const hab = k => { const h = HAB[k]; if (!h) return k; return S.hechizos?.[h.id] || h.n; };
-const habConfirmada = k => !!(S.hechizos?.[HAB[k]?.id] || HAB[k]?.ok);
+// En Forever cada rango tiene su propio ID: también confirmamos por nombre
+const habConfirmada = k => !!(S.hechizos?.[HAB[k]?.id] || Object.values(S.hechizos || {}).includes(HAB[k]?.n) || HAB[k]?.ok);
 function habHTML(k, cls = '') {
   const h = HAB[k];
   return `<a href="${whSpell(h.id)}" target="_blank" rel="noopener" data-wh-rename-link="false" class="no-underline">${icono(h.i, cls, hab(k))}</a>`;

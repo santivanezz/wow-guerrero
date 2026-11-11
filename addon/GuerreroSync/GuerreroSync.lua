@@ -15,9 +15,16 @@ local function seguro(fn, ...)
   if ok then return a, b, c, d, e, g, h end
 end
 
+-- En Forever los personajes pueden tener apellido: UnitFullName lo devuelve
+-- en la segunda posición (donde en otros clientes va el reino).
+local function plano(s) return (s or ""):lower():gsub("[%s%-']", "") end
 local function claveJugador()
-  local nombre, reino = UnitFullName("player")
-  reino = reino or GetRealmName() or "?"
+  local nombre, sufijo = UnitFullName("player")
+  local reino = GetRealmName() or "?"
+  local normal = (GetNormalizedRealmName and GetNormalizedRealmName()) or reino
+  if sufijo and sufijo ~= "" and plano(sufijo) ~= plano(reino) and plano(sufijo) ~= plano(normal) then
+    nombre = (nombre or "?") .. " " .. sufijo
+  end
   return (nombre or "?") .. "-" .. reino, nombre, reino
 end
 

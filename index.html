@@ -11,7 +11,7 @@
   <script src="https://cdn.tailwindcss.com/3.4.16"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script>window.whTooltips ={ colorLinks: false, iconizeLinks: false, renameLinks: false };</script>
-  <link rel="stylesheet" href="css/lichking.css?v=3">
+  <link rel="stylesheet" href="css/lichking.css?v=4">
 </head>
 <body>
   <canvas id="nieve" aria-hidden="true"></canvas>
@@ -151,10 +151,11 @@
           <li>Descarga el addon y descomprímelo en <code class="frost">World of Warcraft\_&lt;forever&gt;_\Interface\AddOns\</code> (la carpeta de WoW Forever; debe quedar <code class="frost">AddOns\GuerreroSync\GuerreroSync.toc</code>).</li>
           <li>Entra al juego. Si sale "desactualizado", marca <i>Cargar addons desactualizados</i>.</li>
           <li>Escribe <code class="frost">/gsync guardar</code> (o <code class="frost">/reload</code>). WoW escribe el archivo al recargar o al salir.</li>
-          <li>Pulsa <b>Conectar</b> y elige <code class="frost">WTF\Account\&lt;TU CUENTA&gt;\SavedVariables\GuerreroSync.lua</code>. Solo la primera vez.</li>
+          <li><b>WoW está en "Program Files" y el navegador no deja leer ahí</b> ("contiene archivos del sistema"). Descarga el <a href="addon/GuerreroSync-copiador.zip" download>copiador</a>, descomprímelo donde quieras y haz doble clic en <code class="frost">Iniciar-copiador.cmd</code>: copia tu archivo a <code class="frost">C:\Users\&lt;tú&gt;\GuerreroSync\</code> cada vez que el juego guarda.</li>
+          <li>Pulsa <b>Conectar</b> y elige <code class="frost">C:\Users\&lt;tú&gt;\GuerreroSync\GuerreroSync.lua</code> (la copia, no el original). Solo la primera vez.</li>
           <li>Desde ahí la página lo relee sola al abrirla y cada 20 s: cada <code class="frost">/reload</code> o al salir del juego, tu web se actualiza.</li>
         </ol>
-        <p class="text-xs muted mt-3">Chrome/Edge pueden pedir confirmar el permiso una vez por sesión (botón Sincronizar). Nada sale de tu PC: el archivo se lee en tu navegador.</p>
+        <p class="text-xs muted mt-3">Para que el copiador arranque solo con Windows, pon un acceso directo a <code class="frost">Iniciar-copiador.cmd</code> en la carpeta <code class="frost">shell:startup</code>. Chrome/Edge pueden pedir confirmar el permiso una vez por sesión (botón Sincronizar). Nada sale de tu PC.</p>
       </div>
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="panel">
@@ -183,11 +184,11 @@
   <footer class="capa text-center text-xs muted py-8">Guía personal de Guerrero · WoW Forever 1.60.1 · Datos de Wowhead, Icy Veins, Maxroll y talentsforever.com</footer>
   <div id="toast" class="hidden" role="status" aria-live="polite"></div>
 
-  <script src="js/wowhead-data.js?v=3"></script>
-  <script src="js/guia.js?v=3"></script>
-  <script src="js/item-stats.js?v=3"></script>
-  <script src="js/sync.js?v=3"></script>
-  <script src="js/app.js?v=3"></script>
+  <script src="js/wowhead-data.js?v=4"></script>
+  <script src="js/guia.js?v=4"></script>
+  <script src="js/item-stats.js?v=4"></script>
+  <script src="js/sync.js?v=4"></script>
+  <script src="js/app.js?v=4"></script>
   <script src="https://wow.zamimg.com/js/tooltips.js"></script>
 </body>
 </html>
