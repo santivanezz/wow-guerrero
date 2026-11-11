@@ -67,7 +67,7 @@ a { color: var(--frost); }
 .pastilla b { color: var(--ice); font-family: ui-monospace, monospace; }
 
 /* ---------- Pestañas ---------- */
-.pestanas { display: flex; gap: .15rem; overflow-x: auto; scrollbar-width: thin; }
+.pestanas { display: flex; gap: .15rem; overflow-x: auto; scrollbar-width: thin; scrollbar-color: #1b3552 transparent; }
 .pestana {
   font-family: var(--font-title); font-size: .76rem; font-weight: 600; letter-spacing: .06em;
   padding: .65rem .85rem; border: 0; background: transparent; color: var(--muted);

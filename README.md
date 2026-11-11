@@ -8,6 +8,7 @@ Página personal para mi Guerrero en World of Warcraft: Forever (1.60.1), estilo
 
 - **Panel**: nivel, XP con descanso, oro, profesiones, habilidad con armas, atributos y "qué hacer ahora" (siguiente talento, hitos, montura, reparar, bolsas llenas…).
 - **Equipo y bolsas**: tu equipo, bolsas y banco con tooltips de Wowhead Forever; mejoras para tu rango marcando lo que ya tienes.
+- **Comparador** (estilo SimC simplificado): DPS estimado de cada arma con tu PA y crítico, penalización por habilidad con armas, escudos por mitigación y piezas que mejoran tu equipo. Acepta cualquier objeto pegando su enlace de Wowhead.
 - **Talentos**: orden de leveo nivel a nivel (Icy Veins) y builds de 60 comparando **estadística** (talentsforever.com / wowforevertalent.com) con guías.
 - **Rotación, Macros y Teclas** por especialización (Protección, Armas, Furia), con los nombres de tu cliente.
 - **Mazmorras** con rango de nivel y botín, **Diario** con evolución automática, **Recursos**.

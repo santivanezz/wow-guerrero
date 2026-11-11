@@ -4,7 +4,7 @@
 const STORAGE_KEY = 'wowf-guerrero-v1';
 const TAB_KEY = 'wowf-guerrero-tab';
 const ICON_CACHE_KEY = 'wowf-iconos';
-const TABS = ['panel', 'equipo', 'talentos', 'rotacion', 'macros', 'teclas', 'mazmorras', 'diario', 'sync', 'recursos'];
+const TABS = ['panel', 'equipo', 'comparador', 'talentos', 'rotacion', 'macros', 'teclas', 'mazmorras', 'diario', 'sync', 'recursos'];
 const SLOT_NUM = { 0: 'Munición', 1: 'Cabeza', 2: 'Cuello', 3: 'Hombros', 4: 'Camisa', 5: 'Pecho', 6: 'Cintura', 7: 'Piernas', 8: 'Pies', 9: 'Muñecas', 10: 'Manos', 11: 'Anillo 1', 12: 'Anillo 2', 13: 'Abalorio 1', 14: 'Abalorio 2', 15: 'Espalda', 16: 'Mano derecha', 17: 'Mano izquierda', 18: 'A distancia', 19: 'Tabardo' };
 const ORDEN_SLOTS = ['Cabeza', 'Cuello', 'Hombros', 'Espalda', 'Pecho', 'Camisa', 'Tabardo', 'Muñecas', 'Manos', 'Cintura', 'Piernas', 'Pies', 'Anillo 1', 'Anillo 2', 'Abalorio 1', 'Abalorio 2', 'Mano derecha', 'Mano izquierda', 'A distancia', 'Munición'];
 
@@ -85,16 +85,22 @@ function datosItem(id, nombreLocal) {
 }
 let pidiendo = false;
 async function completarIconos(ids) {
-  const faltan = [...new Set(ids)].filter(id => id && !WHD.items[id] && !ICONOS_EXTRA[id]).slice(0, 60);
+  const faltan = [...new Set(ids)].filter(id => id && !(WHD.items[id]?.s) && !(ICONOS_EXTRA[id]?.s)).slice(0, 60);
   if (!faltan.length || pidiendo) return;
   pidiendo = true;
   let nuevos = 0;
   for (const id of faltan) {
     try {
-      const r = await fetch(`https://nether.wowhead.com/forever/tooltip/item/${id}?locale=6`);
-      if (!r.ok) continue;
-      const d = await r.json();
-      if (d && d.icon) { ICONOS_EXTRA[id] = { n: String(d.name || '').replace(/^\[|\]$/g, ''), i: d.icon, q: d.quality }; nuevos++; }
+      const base = WHD.items[id] || ICONOS_EXTRA[id];
+      let n = base?.n, i = base?.i, q = base?.q;
+      if (!base) {
+        const r = await fetch(`https://nether.wowhead.com/forever/tooltip/item/${id}?locale=6`);
+        if (!r.ok) continue;
+        const d = await r.json(); n = String(d.name || '').replace(/^\[|\]$/g, ''); i = d.icon; q = d.quality;
+      }
+      const r2 = await fetch(`https://nether.wowhead.com/forever/tooltip/item/${id}`);
+      const s = r2.ok ? statsDesdeTooltip((await r2.json()).tooltip) : {};
+      ICONOS_EXTRA[id] = { n, i, q, s }; nuevos++;
     } catch (e) { break; } // sin CORS o sin red: se queda el icono genérico
   }
   pidiendo = false;
@@ -599,6 +605,161 @@ async function renderSyncEstado(estado) {
   $('btn-sync-hdr')?.classList.toggle('primario', !!h);
 }
 
+// ---------- COMPARADOR (modelo simplificado, inspirado en SimC) ----------
+const statsDe = id => WHD.items[id]?.s || ICONOS_EXTRA[id]?.s || null;
+const RANURA_ES = { Head: 'Cabeza', Neck: 'Cuello', Shoulder: 'Hombros', Back: 'Espalda', Chest: 'Pecho', Wrist: 'Muñecas', Hands: 'Manos', Waist: 'Cintura', Legs: 'Piernas', Feet: 'Pies', Finger: 'Anillo', Trinket: 'Abalorio' };
+const PESOS = {
+  dps:  { fue: 1, agi: 0.6, agu: 0.2, armadura: 0.01, pa: 0.5, crit: 12, golpe: 12, def: 0, bloqueo: 0 },
+  tank: { agu: 1, armadura: 0.07, def: 1.3, agi: 0.6, fue: 0.45, bloqueo: 0.3, golpe: 4, crit: 2, pa: 0.2 }
+};
+const agiPorCrit = nv => Math.max(4, 20 * nv / 60);
+const mitigacion = (armadura, nv) => armadura / (armadura + 400 + 85 * nv) * 100;
+
+function habilidadArma(s) {
+  if (!s || !s.tipo) return null;
+  const dosM = s.ranura === 'Two-Hand';
+  const base = { Axe: 'Hacha', Mace: 'Maza', Sword: 'Espada', Polearm: 'asta', Staff: 'Bast', Dagger: 'Daga', 'Fist Weapon': 'puño' }[s.tipo];
+  if (!base) return null;
+  const nombre = Object.keys(S.armas).find(k => k.toLowerCase().includes(base.toLowerCase()) && (/2M|dos manos/i.test(k) === dosM || ['asta', 'Bast'].includes(base)));
+  return nombre ? { nombre, ...S.armas[nombre] } : null;
+}
+function fallosExtra(s) {
+  const h = habilidadArma(s);
+  if (!h) {
+    const conocido = ['Axe', 'Mace', 'Sword', 'Polearm', 'Staff', 'Dagger', 'Fist Weapon'].includes(s?.tipo);
+    return { extra: 0, h: null, sinEntrenar: conocido && Object.keys(S.armas).length > 0 };
+  }
+  const deficit = S.personaje.nivel * 5 - h.actual;
+  const extra = deficit <= 0 ? 0 : deficit <= 10 ? deficit * 0.1 : Math.min(60, 1 + (deficit - 10) * 0.4);
+  return { extra, h };
+}
+function lineaBase() {
+  const nv = S.personaje.nivel, a = S.atributos || {};
+  const main = S.equipo.find(e => e.slotNombre === 'Mano derecha'), off = S.equipo.find(e => e.slotNombre === 'Mano izquierda');
+  const sm = main ? statsDe(main.id) || {} : {}, so = off ? statsDe(off.id) || {} : {};
+  const pa = a.pa ?? (60 + nv * 6), crit = a.critico ?? 5, armadura = a.armadura ?? nv * 35, k = agiPorCrit(nv);
+  return {
+    nv, main, off, sm, so, k, pa, crit, armadura,
+    pa0: pa - 2 * ((sm.fue || 0) + (so.fue || 0)) - (sm.pa || 0) - (so.pa || 0),
+    crit0: crit - ((sm.agi || 0) + (so.agi || 0)) / k - (sm.crit || 0) - (so.crit || 0),
+    arm0: armadura - (sm.armadura || 0) - (so.armadura || 0)
+  };
+}
+function evaluarArma(id, offId, b, modo) {
+  const s = statsDe(id); if (!s || !s.min) return null;
+  const so = offId ? statsDe(offId) || {} : {};
+  const off2 = s.ranura === 'Two-Hand' ? {} : so;
+  const pa = b.pa0 + 2 * ((s.fue || 0) + (off2.fue || 0)) + (s.pa || 0) + (off2.pa || 0);
+  const crit = b.crit0 + ((s.agi || 0) + (off2.agi || 0)) / b.k + (s.crit || 0) + (off2.crit || 0);
+  const media = (s.min + s.max) / 2;
+  const blanco = media / s.vel + pa / 14;
+  const golpe = media + pa / 14 * s.vel;
+  const { extra, h, sinEntrenar } = fallosExtra(s);
+  const acierto = 1 - extra / 100;
+  const dps = modo === 'tank' ? blanco * (1 + crit / 100) * acierto : (blanco * (1 + crit / 100) + golpe * (1 + crit / 100) / 6) * acierto;
+  return { id, s, pa, crit, blanco, golpe, dps, extra, h, sinEntrenar, armaDps: media / s.vel };
+}
+function puntuacion(s, modo) { const w = PESOS[modo]; return Object.keys(w).reduce((t, k) => t + (s?.[k] || 0) * w[k], 0); }
+
+function candidatos() {
+  const ids = new Set();
+  S.equipo.forEach(e => ids.add(e.id));
+  (S.bolsasExtra || []).forEach(e => ids.add(e.id));
+  S.bolsas.forEach(e => ids.add(e.id));
+  (S.banco?.items || []).forEach(e => ids.add(e.id));
+  Object.values(MEJORAS).forEach(l => l.forEach(([id, , f]) => { if (f !== 'H') ids.add(id); }));
+  (S.comparadorExtra || []).forEach(id => ids.add(id));
+  return [...ids];
+}
+function agregarComparar(ev) {
+  ev.preventDefault();
+  const v = ev.target.item.value.trim(); const m = /(?:item=)?(\d{2,7})/.exec(v);
+  if (!m) { toast('Pega un enlace de Wowhead o un ID de objeto', true); return; }
+  S.comparadorExtra = [...new Set([...(S.comparadorExtra || []), +m[1]])];
+  ev.target.reset(); guardar('Objeto añadido: cargando datos de Wowhead…');
+  completarIconos([+m[1]]);
+}
+function quitarComparar(id) { S.comparadorExtra = (S.comparadorExtra || []).filter(x => x !== id); guardar(); }
+const delta = (v, dec = 1, suf = '') => `<span style="color:${v > 0.05 ? 'var(--ok)' : v < -0.05 ? '#fca5a5' : 'var(--muted)'}">${v > 0 ? '+' : ''}${v.toFixed(dec)}${suf}</span>`;
+
+function renderComparador() {
+  const el = $('comparador-contenido'); if (!el) return;
+  const b = lineaBase(), modo = S.spec === 'prot' ? 'tank' : 'dps', nv = b.nv;
+  const ids = candidatos();
+  completarIconos(ids);
+  const inv = inventario();
+  const etiqueta = id => { const d = inv.get(id); const extra = (S.comparadorExtra || []).includes(id); return (d ? `<span class="chip ok">${d}</span>` : '') + (extra ? ` <button class="muted text-xs" onclick="quitarComparar(${id})" title="Quitar">✕</button>` : ''); };
+  const nivelChip = s => s?.nivel > nv ? ` <span class="chip warn">nv ${s.nivel}</span>` : '';
+
+  // Armas
+  const quiere2M = S.spec === 'arms';
+  const armas = ids.map(id => ({ id, s: statsDe(id) })).filter(x => x.s?.min && (quiere2M ? x.s.ranura === 'Two-Hand' : ['One-Hand', 'Main Hand'].includes(x.s.ranura)));
+  const offActual = b.off?.id;
+  const actual = b.main ? evaluarArma(b.main.id, offActual, b, modo) : null;
+  const filas = armas.map(x => evaluarArma(x.id, quiere2M ? null : offActual, b, modo)).filter(Boolean).sort((x, y) => y.dps - x.dps);
+  const tablaArmas = `<div class="scroll-x"><table class="tabla"><thead><tr><th>Arma</th><th>Daño · Vel.</th><th>DPS arma</th><th>Golpe medio</th><th>DPS estimado</th><th>vs actual</th><th>Habilidad</th></tr></thead><tbody>
+    ${filas.map(f => `<tr style="${actual && f.id === actual.id ? 'background:rgba(79,179,255,.10)' : ''}">
+      <td style="min-width:210px">${itemHTML(f.id)} ${etiqueta(f.id)}${nivelChip(f.s)}</td>
+      <td class="font-mono text-xs">${f.s.min}-${f.s.max} · ${f.s.vel.toFixed(2)}</td>
+      <td class="font-mono">${f.armaDps.toFixed(1)}</td>
+      <td class="font-mono">${f.golpe.toFixed(0)}</td>
+      <td class="font-mono ice font-bold">${f.dps.toFixed(1)}</td>
+      <td class="font-mono">${actual ? delta((f.dps / actual.dps - 1) * 100, 0, '%') : '—'}</td>
+      <td class="text-xs">${f.h ? `<span class="${f.extra > 5 ? 'chip bad' : f.extra > 0 ? 'chip warn' : 'chip ok'}">${esc(f.h.nombre)} ${f.h.actual}/${nv * 5}${f.extra > 0 ? ` · −${f.extra.toFixed(0)}% acierto` : ''}</span>` : f.sinEntrenar ? `<span class="chip bad">${esc({ Dagger: 'Dagas', Polearm: 'Armas de asta', Staff: 'Bastones', 'Fist Weapon': 'Armas de puño', Sword: 'Espadas', Axe: 'Hachas', Mace: 'Mazas' }[f.s.tipo] || f.s.tipo)}: sin entrenar</span>` : '<span class="muted">—</span>'}</td>
+    </tr>`).join('') || `<tr><td colspan="7" class="muted">Sin armas ${quiere2M ? 'de dos manos' : 'de una mano'} con datos todavía.</td></tr>`}
+    </tbody></table></div>`;
+
+  // Escudos (Protección)
+  let tablaEscudos = '';
+  if (modo === 'tank') {
+    const so = b.so || {};
+    const escudos = ids.map(id => ({ id, s: statsDe(id) })).filter(x => x.s?.tipo === 'Shield').map(x => {
+      const arm = b.arm0 + (b.sm.armadura || 0) + (x.s.armadura || 0);
+      return { ...x, arm, mit: mitigacion(arm, nv), vida: ((x.s.agu || 0) - (so.agu || 0)) * 10, p: puntuacion(x.s, 'tank') };
+    }).sort((x, y) => y.p - x.p);
+    const mitActual = mitigacion(b.armadura, nv);
+    tablaEscudos = `<h3 class="titulo ice text-base mt-6 mb-2">Escudos</h3><div class="scroll-x"><table class="tabla"><thead><tr><th>Escudo</th><th>Armadura</th><th>Bloqueo</th><th>Stats</th><th>Mitigación física</th><th>vs actual</th></tr></thead><tbody>
+      ${escudos.map(e => `<tr style="${e.id === b.off?.id ? 'background:rgba(79,179,255,.10)' : ''}"><td style="min-width:210px">${itemHTML(e.id)} ${etiqueta(e.id)}${nivelChip(e.s)}</td>
+        <td class="font-mono">${e.s.armadura || 0}</td><td class="font-mono">${e.s.bloqueo || 0}</td>
+        <td class="text-xs muted">${['fue', 'agi', 'agu', 'def'].filter(k => e.s[k]).map(k => `+${e.s[k]} ${{ fue: 'Fue', agi: 'Agi', agu: 'Agu', def: 'Def' }[k]}`).join(' ') || '—'}</td>
+        <td class="font-mono">${e.mit.toFixed(1)}%</td><td class="font-mono">${delta(e.mit - mitActual, 1, ' pts')}</td></tr>`).join('') || '<tr><td colspan="6" class="muted">Sin escudos con datos.</td></tr>'}
+      </tbody></table></div><p class="text-xs muted mt-1">Mitigación contra enemigos de tu nivel: armadura / (armadura + 400 + 85 × nivel). ${b.off ? '' : 'Ahora no llevas escudo: equipa uno para tanquear.'}</p>`;
+  }
+
+  // Piezas de armadura
+  const equipadoPorRanura = {};
+  S.equipo.forEach(e => { const s = statsDe(e.id); const r = s?.ranura && RANURA_ES[s.ranura]; if (r) (equipadoPorRanura[r] = equipadoPorRanura[r] || []).push({ id: e.id, s, p: puntuacion(s, modo) }); });
+  const piezas = ids.map(id => ({ id, s: statsDe(id) })).filter(x => x.s && RANURA_ES[x.s.ranura] && !S.equipo.some(e => e.id === x.id)).map(x => {
+    const r = RANURA_ES[x.s.ranura], eq = (equipadoPorRanura[r] || []).sort((a, c) => a.p - c.p)[0];
+    const p = puntuacion(x.s, modo);
+    return { ...x, r, eq, p, d: p - (eq?.p || 0) };
+  }).filter(x => x.d > 0.5).sort((x, y) => y.d - x.d);
+  const tablaPiezas = `<div class="scroll-x"><table class="tabla"><thead><tr><th>Mejora</th><th>Ranura</th><th>Stats</th><th>Reemplaza a</th><th>Mejora (puntos)</th></tr></thead><tbody>
+    ${piezas.map(x => `<tr><td style="min-width:210px">${itemHTML(x.id)} ${etiqueta(x.id)}${nivelChip(x.s)}</td><td class="text-xs">${x.r}</td>
+      <td class="text-xs muted">${[['armadura', 'Arm'], ['fue', 'Fue'], ['agi', 'Agi'], ['agu', 'Agu'], ['def', 'Def']].filter(([k]) => x.s[k]).map(([k, l]) => `${x.s[k]} ${l}`).join(' · ')}</td>
+      <td class="text-xs">${x.eq ? esc(datosItem(x.eq.id).n) : '<span class="muted">(vacío)</span>'}</td><td class="font-mono">${delta(x.d, 1)}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">No hay piezas mejores entre las que conocemos.</td></tr>'}
+    </tbody></table></div>`;
+
+  el.innerHTML = `
+    <div class="panel">
+      <div class="panel-titulo">Tu línea base <span class="sub">${S.sync ? 'datos de ' + (S.sync.fuente === 'addon' ? 'GuerreroSync' : 'SimC') : 'valores estimados: sincroniza para afinar'}</span></div>
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 text-sm">
+        <div><div class="lbl">Arma actual</div>${b.main ? itemHTML(b.main.id, b.main.nombre) : '<span class="muted">—</span>'}</div>
+        <div><div class="lbl">Poder de ataque</div><b class="ice font-mono">${Math.round(b.pa)}</b></div>
+        <div><div class="lbl">Crítico</div><b class="ice font-mono">${b.crit.toFixed(2)}%</b></div>
+        <div><div class="lbl">Armadura</div><b class="ice font-mono">${b.armadura}</b> <span class="muted text-xs">(${mitigacion(b.armadura, nv).toFixed(1)}%)</span></div>
+        <div><div class="lbl">Modo</div><b class="ice">${modo === 'tank' ? '🛡️ Tanque (1M + escudo)' : S.spec === 'arms' ? '⚔️ Armas (2M)' : '🩸 Furia (1M)'}</b></div>
+      </div>
+    </div>
+    <div class="panel"><div class="panel-titulo">Armas <span class="sub">${modo === 'tank' ? 'el arma del tanque aporta amenaza blanca; lo clave es el escudo' : 'ordenadas por DPS estimado'}</span></div>${tablaArmas}${tablaEscudos}</div>
+    <div class="panel"><div class="panel-titulo">Piezas que mejoran tu equipo <span class="sub">pesos de ${modo === 'tank' ? 'tanque: Aguante > Defensa > Armadura' : 'DPS: Fuerza > Agilidad'}</span></div>${tablaPiezas}</div>
+    <div class="panel">
+      <div class="panel-titulo">Comparar otro objeto</div>
+      <form onsubmit="agregarComparar(event)" class="flex gap-2 flex-wrap"><input name="item" class="inp" style="max-width:420px" placeholder="Enlace de Wowhead (…/item=7230) o ID"><button class="btn primario">Añadir</button></form>
+      <p class="text-xs muted mt-3"><b>Cómo calcula:</b> DPS blanco = daño medio / velocidad + PA / 14. Golpe medio = daño medio + PA / 14 × velocidad (Abrumar, Golpe mortal, Embate escalan con él: por eso las armas lentas rinden más en Armas). DPS estimado = blanco + un ataque de arma cada 6 s, con tu crítico. Fuerza = 2 PA. Agilidad ≈ 1% de crítico cada ${b.k.toFixed(1)} a tu nivel. Habilidad con armas baja = fallos extra. Es una aproximación: SimulationCraft todavía no modela WoW Forever.</p>
+    </div>`;
+}
+
 // ---------- Respaldo ----------
 function exportar() {
   S.ultimoRespaldo = new Date().toISOString(); guardar(null, true);
@@ -617,7 +778,7 @@ function renderRecursos() {
 
 // ---------- Init ----------
 function renderTodo() {
-  renderCabecera(); renderPanel(); renderEquipo(); renderTalentos(); renderRotacion(); renderMacros(); renderTeclas(); renderMazmorras(); renderDiario();
+  renderCabecera(); renderPanel(); renderEquipo(); renderComparador(); renderTalentos(); renderRotacion(); renderMacros(); renderTeclas(); renderMazmorras(); renderDiario();
   if (!$('tab-diario').classList.contains('hidden')) renderGrafico();
   refrescarTooltips();
 }
