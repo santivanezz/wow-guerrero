@@ -1,0 +1,8 @@
+## Interface: 16001
+## Title: |cff8fd6ffGuerreroSync|r
+## Notes: Exporta tu personaje (oro, XP, bolsas, banco, equipo, talentos, profesiones) para tu página web.
+## Author: Dewa
+## Version: 1.0.0
+## SavedVariables: GuerreroSyncDB
+
+GuerreroSync.lua

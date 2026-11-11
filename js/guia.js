@@ -1,101 +1,381 @@
 // =====================================================================
-// CONTENIDO DE LA GUÍA (estático). Edita aquí para cambiar la guía.
-// Lo que marques en la página (progreso, checks, diario) NO va aquí:
-// se guarda en el navegador (localStorage) y en tus respaldos JSON.
+// CONTENIDO DE LA GUÍA — WoW Forever (patch 1.60.1)
+// Fuentes: Icy Veins Forever (4 nov 2026), talentsforever.com y
+// wowforevertalent.com (estadísticas de builds), Maxroll, Warcraft Tavern,
+// ForeverChanges, Wowhead Forever. Edita aquí para cambiar la guía.
 // =====================================================================
 
-const GUIA = {
-  talentos: {
-    22: [
-      { name: "Desvío (Deflection)", rank: "5/5", tree: "Armas", desc: "+5% probabilidad de parada cuerpo a cuerpo.", icon: "⚔️" },
-      { name: "Maestría táctica (Tactical Mastery)", rank: "5/5", tree: "Armas", desc: "Conserva hasta 25 de Ira al cambiar de actitud. VITAL PARA TANQUEAR Y CAMBIAR DE ACTITUD.", icon: "🌀" },
-      { name: "Ira desbocada (Unbridled Wrath)", rank: "3/5", tree: "Armas/Furia", desc: "Otorga Ira extra con ataques blancos rápidos o de 2 Manos.", icon: "⚡" }
-    ],
-    30: [
-      { name: "Desvío (Deflection)", rank: "5/5", tree: "Armas", desc: "+5% Parada.", icon: "⚔️" },
-      { name: "Maestría táctica", rank: "5/5", tree: "Armas", desc: "Retención total de Ira entre cambios de actitud.", icon: "🌀" },
-      { name: "Spearing Strike (WoW Forever)", rank: "1/1", tree: "Armas", desc: "Daño extra masivo contra Gigantes y Dragonantes. (por verificar)", icon: "🎯" },
-      { name: "Especialización arma 2 manos", rank: "3/5", tree: "Armas", desc: "+6% de daño físico con 2 Manos.", icon: "🪓" },
-      { name: "Empalar (Impale)", rank: "2/2", tree: "Armas", desc: "+20% daño crítico de habilidades.", icon: "💥" },
-      { name: "Golpes de barrido (Sweeping Strikes)", rank: "1/1", tree: "Armas", desc: "¡HITO NIVEL 30! Daño en área destructivo.", icon: "🌪️" }
-    ]
-  },
+// ---------- Habilidades ----------
+// n = nombre en tu cliente (español latino, es-MX). Si conectas GuerreroSync,
+// los nombres se reemplazan por los EXACTOS de tu libro de hechizos.
+// ok = nombre confirmado en tu cliente; sin ok = por confirmar.
+const HAB = {
+  charge:        { id: 100,   n: 'Cargar',                 i: 'ability_warrior_charge', ok: 1, lvl: 4 },
+  rend:          { id: 772,   n: 'Desgarrar',              i: 'ability_gouge', ok: 1, lvl: 4 },
+  heroic:        { id: 78,    n: 'Golpe heroico',          i: 'ability_rogue_ambush', ok: 1, lvl: 1 },
+  battleShout:   { id: 6673,  n: 'Grito de batalla',       i: 'ability_warrior_battleshout', ok: 1, lvl: 1 },
+  battleStance:  { id: 2457,  n: 'Actitud de batalla',     i: 'ability_warrior_offensivestance', ok: 1, lvl: 1 },
+  defStance:     { id: 71,    n: 'Actitud defensiva',      i: 'ability_warrior_defensivestance', ok: 1, lvl: 10 },
+  berserkerStance:{ id: 2458, n: 'Actitud rabiosa',        i: 'ability_racial_avatar', lvl: 30 },
+  bloodrage:     { id: 2687,  n: 'Ira sangrienta',         i: 'ability_racial_bloodrage', ok: 1, lvl: 10 },
+  sunder:        { id: 7386,  n: 'Hender armadura',        i: 'ability_warrior_sunder', ok: 1, lvl: 10 },
+  taunt:         { id: 355,   n: 'Provocar',               i: 'spell_nature_reincarnation', ok: 1, lvl: 10 },
+  overpower:     { id: 7384,  n: 'Abrumar',                i: 'ability_meleedamage', ok: 1, lvl: 12 },
+  shieldBash:    { id: 72,    n: 'Azote de escudo',        i: 'ability_warrior_shieldbash', ok: 1, lvl: 12 },
+  revenge:       { id: 6572,  n: 'Revancha',               i: 'ability_warrior_revenge', ok: 1, lvl: 14 },
+  thunderClap:   { id: 6343,  n: 'Atronar',                i: 'spell_nature_thunderclap', ok: 1, lvl: 6 },
+  hamstring:     { id: 1715,  n: 'Seccionar',              i: 'ability_shockwave', ok: 1, lvl: 8 },
+  demoShout:     { id: 1160,  n: 'Grito desmoralizador',   i: 'ability_warrior_warcry', ok: 1, lvl: 14 },
+  shieldBlock:   { id: 2565,  n: 'Bloqueo con escudo',     i: 'ability_defend', ok: 1, lvl: 16 },
+  disarm:        { id: 676,   n: 'Desarmar',               i: 'ability_warrior_disarm', ok: 1, lvl: 18 },
+  cleave:        { id: 845,   n: 'Rajar',                  i: 'ability_warrior_cleave', ok: 1, lvl: 20 },
+  victory:       { id: 34428, n: 'Ataque de la victoria',  i: 'ability_warrior_devastate', ok: 1, lvl: 20 },
+  retaliation:   { id: 20230, n: 'Represalias',            i: 'ability_warrior_challange', ok: 1, lvl: 20 },
+  slam:          { id: 1464,  n: 'Embate',                 i: 'ability_warrior_decisivestrike', lvl: 20 },
+  mockingBlow:   { id: 694,   n: 'Falsa arremetida',       i: 'ability_warrior_punishingblow', ok: 1, lvl: 16 },
+  execute:       { id: 5308,  n: 'Ejecutar',               i: 'inv_sword_48', lvl: 24 },
+  shieldWall:    { id: 871,   n: 'Muro de escudo',         i: 'ability_warrior_shieldwall', lvl: 28 },
+  intercept:     { id: 20252, n: 'Interceptar',            i: 'ability_rogue_sprint', lvl: 30 },
+  pummel:        { id: 6552,  n: 'Zurrar',                 i: 'inv_gauntlets_04', lvl: 30 },
+  berserkerRage: { id: 18499, n: 'Ira rabiosa',            i: 'spell_nature_ancestralguardian', lvl: 30 },
+  whirlwind:     { id: 1680,  n: 'Torbellino',             i: 'ability_whirlwind', lvl: 36 },
+  intimidating:  { id: 5246,  n: 'Grito intimidador',      i: 'ability_golemthunderclap', lvl: 22 },
+  challenging:   { id: 1161,  n: 'Grito desafiante',       i: 'ability_bullrush', lvl: 26 },
+  recklessness:  { id: 1719,  n: 'Temeridad',              i: 'ability_criticalstrike', lvl: 50 },
+  stoneform:     { id: 20594, n: 'Forma de piedra',        i: 'spell_shadow_unholystrength', ok: 1, lvl: 1 },
+  // Talentos activos
+  sweeping:      { id: 12292, n: 'Golpes de barrido',      i: 'ability_rogue_slicedice', lvl: 30 },
+  mortalStrike:  { id: 12294, n: 'Golpe mortal',           i: 'ability_warrior_savageblow', lvl: 40 },
+  bloodthirst:   { id: 23881, n: 'Sed de sangre',          i: 'spell_nature_bloodlust', lvl: 40 },
+  shieldSlam:    { id: 23922, n: 'Embate con escudo',      i: 'inv_shield_05', lvl: 40 },
+  deathWish:     { id: 12328, n: 'Deseo de muerte',        i: 'spell_shadow_deathpact', lvl: 30 },
+  lastStand:     { id: 12975, n: 'Última posición',        i: 'spell_holy_ashestoashes', lvl: 23 },
+  concussion:    { id: 12809, n: 'Golpe conmocionador',    i: 'ability_thunderbolt', lvl: 33 },
+  piercingHowl:  { id: 12323, n: 'Aullido penetrante',     i: 'spell_shadow_deathscream', lvl: 20 }
+};
 
-  // id: clave fija para guardar si lo conseguiste. No la cambies una vez usada.
-  equipo: [
-    { id: "cabeza-minero", slot: "Cabeza", name: "Casco de minero reforzado", type: "Malla", source: "Deadmines", stats: "+6 Fuerza, +5 Agilidad", priority: "Alta" },
-    { id: "hombros-bronce", slot: "Hombros", name: "Hombreras de bronce plateado", type: "Malla", source: "Herrería", stats: "+5 Fuerza, +5 Aguante", priority: "Media (Herrería 135)" },
-    { id: "pecho-mercenario", slot: "Pecho", name: "Cota de mallas de mercenario", type: "Malla", source: "Misión (Crestagrana)", stats: "+8 Fuerza, +6 Aguante", priority: "Alta" },
-    { id: "manos-ogro", slot: "Manos", name: "Guantes de garra de ogro", type: "Malla", source: "Stockades", stats: "+7 Fuerza, +4 Aguante", priority: "Muy Alta" },
-    { id: "arma-martillo-bronce", slot: "Arma 2M (BiS)", name: "Martillo de guerra de bronce", type: "Maza 2M", source: "Herrería", stats: "Daño 45-68 (2.9s), +7 Fuerza", priority: "¡MÁXIMA!" }
+// ---------- Árboles de talentos de Forever (orden = orden de las calculadoras) ----------
+// [nombre, rangos máximos, fila, descripción corta]
+const ARBOLES = {
+  arms: { nombre: 'Armas', icono: 'ability_warrior_savageblow', talentos: [
+    ['Improved Heroic Strike', 3, 1, 'Golpe heroico cuesta menos ira'],
+    ['Deflection', 5, 1, '+parada'],
+    ['Improved Rend', 3, 1, '+daño de Desgarrar'],
+    ['Improved Charge', 2, 2, '+ira al Cargar'],
+    ['Improved Tactical Mastery', 3, 2, 'Conserva más ira al cambiar de actitud'],
+    ['Improved Overpower', 2, 2, '+50% crítico de Abrumar'],
+    ['Anger Management', 1, 3, 'Genera ira en combate'],
+    ['Deep Wounds', 3, 3, 'Los críticos sangran'],
+    ['Spearing Strike', 1, 4, 'Ataque extra vs Gigantes/Dragonantes/montados'],
+    ['Two-Handed Weapon Specialization', 3, 4, '+6% daño con 2M'],
+    ['Impale', 2, 4, '+daño crítico de habilidades'],
+    ['Bloodthrill', 2, 5, 'Golpes a objetivos con Desgarrar habilitan Abrumar'],
+    ['Sweeping Strikes', 1, 5, '5 golpes también impactan a un 2º enemigo'],
+    ['Weaponmaster', 5, 5, 'Bonus según tipo de arma'],
+    ['Improved Slam', 2, 6, 'Embate sin retrasar el golpe, 1 s'],
+    ['Improved Hamstring', 3, 6, 'Seccionar puede inmovilizar'],
+    ['Mortal Strike', 1, 7, 'Golpe mortal']
+  ]},
+  fury: { nombre: 'Furia', icono: 'ability_warrior_innerrage', talentos: [
+    ['Booming Voice', 5, 1, 'Gritos más grandes y baratos'],
+    ['Cruelty', 5, 1, '+5% crítico cuerpo a cuerpo'],
+    ['Lingering Rage', 5, 2, 'La ira tarda más en decaer fuera de combate'],
+    ['Unbridled Wrath', 5, 2, 'Ira extra al golpear'],
+    ['Furious Precision', 3, 3, '+golpe de la mano izquierda'],
+    ['Piercing Howl', 1, 3, 'Ralentiza en área'],
+    ['Blood Craze', 3, 3, 'Regenera vida tras crítico'],
+    ['Enrage', 5, 3, '+10% daño físico al recibir golpes'],
+    ['Dual Wield Specialization', 5, 4, '+daño e ira de la mano izquierda'],
+    ['Reckless Swings', 1, 4, 'Más ira a cambio de vida'],
+    ['Improved Execute', 2, 4, 'Ejecutar más barato'],
+    ['Improved Berserker Rage', 2, 5, 'Ira rabiosa da 10 de ira'],
+    ['Death Wish', 1, 5, '+20% daño, +5% daño recibido'],
+    ['Gore Drinker', 2, 5, 'Sanación al golpear'],
+    ['Improved Intercept', 2, 5, 'Interceptar con menos CD'],
+    ['Improved Whirlwind', 2, 6, 'Torbellino CD 8 s y +30% al más cercano'],
+    ['Flurry', 3, 6, '+30% velocidad tras crítico'],
+    ['Bloodthirst', 1, 7, 'Sed de sangre']
+  ]},
+  prot: { nombre: 'Protección', icono: 'inv_shield_06', talentos: [
+    ['Improved Bloodrage', 2, 1, '+25% ira de Ira sangrienta'],
+    ['Shield Specialization', 5, 1, '+bloqueo y 5 de ira al bloquear'],
+    ['Iron Will', 5, 1, 'Aturdimientos/miedos más cortos'],
+    ['Anticipation', 5, 2, '+defensa'],
+    ['Improved Revenge', 3, 2, '+60% daño de Revancha'],
+    ['Improved Thunder Clap', 3, 2, 'Atronar más barato'],
+    ['Last Stand', 1, 3, '+vida máxima temporal'],
+    ['Master of Defense', 2, 3, 'Ira al esquivar/parar con escudo'],
+    ['Improved Disarm', 3, 3, 'Desarmar con menos CD'],
+    ['Defiance', 3, 3, '+amenaza en Actitud defensiva'],
+    ['Improved Sunder Armor', 3, 4, 'Hender más barato'],
+    ['Vanguard', 1, 4, 'Cargar en Actitud defensiva'],
+    ['Improved Shield Bash', 2, 4, 'Azote de escudo silencia'],
+    ['Improved Shield Wall', 2, 5, 'Muro de escudo con menos CD'],
+    ['Concussion Blow', 1, 5, 'Aturde 5 s'],
+    ['Focused Rage', 3, 5, 'Habilidades ofensivas más baratas'],
+    ['Bastion', 5, 6, '+daño con escudo'],
+    ['Shield Slam', 1, 7, 'Embate con escudo']
+  ]}
+};
+
+// ---------- Builds de nivel 60 ----------
+// rangos: cadenas de dígitos en el orden de ARBOLES (formato de talentsforever.com)
+const BUILDS = {
+  prot: [
+    { titulo: 'Más popular', fuente: 'Estadística · talentsforever.com (4.817 builds tras los hotfixes del 3 nov) + wowforevertalent.com (12.622 builds)',
+      split: '7/5/39', arms: '0502', fury: '05', prot: '250533120321021351',
+      url: 'https://talentsforever.com/warrior/60/0502-05-250533120321021351-12',
+      nota: 'Build nº1 de guerrero en ambos sitios. Máximo en Protección: Thunder Clap y Sunder baratos, Imp. Shield Wall y Focused Rage.' },
+    { titulo: 'Icy Veins · Shield Slam', fuente: 'Icy Veins (Abide), 4 nov 2026',
+      split: '5/15/31', arms: '05', fury: '05500005', prot: '050530120301021251',
+      url: 'https://www.icy-veins.com/wow-forever/protection-warrior-tank-pve-spec-builds-talents',
+      nota: 'Toma Cruelty, Lingering Rage y Enrage de Furia. Si te falta ira: mueve Anticipation a Imp. Thunder Clap + Imp. Sunder.' }
   ],
-
-  // Ruta de leveo. Cada tarea tiene id para poder marcarla.
-  zonas: [
-    { range: "18 – 21", title: "Fase 1: Crestagrana + Deadmines", mainZone: "Crestagrana / Páramos",
-      tasks: [["z1-misiones", "Completa misiones nivel 18-20 en Crestagrana"], ["z1-deadmines", "Barre Deadmines (Las Minas de la Muerte)"]],
-      warning: "Evita los orcos élite Roca Negra." },
-    { range: "21 – 23", title: "Fase 2: Loch Modan (Catch-up)", mainZone: "Loch Modan (Thelsamar)",
-      tasks: [["z2-verdes", "Misiones verdes de nivel 17-20"], ["z2-mineria", "Mina estaño y cobre de paso (Minería)"]],
-      warning: "Subida rápida sin riesgo." },
-    { range: "23 – 26", title: "Fase 3: Bosque del Ocaso", mainZone: "Bosque del Ocaso (Villa Oscura)",
-      tasks: [["z3-misiones", "Misiones iniciales de Villa Oscura"], ["z3-stockades", "Stockades (Las Mazmorras) como tanque"]],
-      warning: "De noche hay muchos no-muertos agrupados: tira de Atronar." },
-    { range: "26 – 30", title: "Fase 4: Humedales + Ocaso", mainZone: "Los Humedales (Menethil)",
-      tasks: [["z4-humedales", "Misiones de Menethil"], ["z4-ocaso", "Cadenas de misiones restantes del Ocaso"], ["z4-sweeping", "Nivel 30: aprende Golpes de barrido"]],
-      warning: "Cocodrilos y raptores pegan fuerte: lleva vendas." },
-    { range: "30 – 35", title: "Fase 5: Laderas de Trabalomas + Arathi", mainZone: "Trabalomas / Arathi",
-      tasks: [["z5-trabalomas", "Misiones de Costasur"], ["z5-arathi", "Arathi: mina hierro (Minería 125+)"]],
-      warning: "Zona en disputa: cuidado con la Horda." }
+  arms: [
+    { titulo: 'Más popular = Icy Veins', fuente: 'Estadística talentsforever (#3) + Icy Veins Mortal Strike 2M',
+      split: '32/18/0', arms: '30303213132215201', fury: '05050005012', prot: '',
+      url: 'https://talentsforever.com/warrior/60/30303213132215201-05050005012--12',
+      nota: 'El árbol de Armas es IDÉNTICO en la estadística y en Icy Veins. Icy cambia Imp. Execute 2 → 1 + Imp. Bloodrage 2 (32/17/2).' }
   ],
-
-  rotaciones: {
-    solo: {
-      title: "Rotación Solo DPS / Misiones (Actitud de Batalla — Arma 2M)",
-      steps: [
-        { num: "1", skill: "Grito de batalla Rango 2 (Tecla X)", stance: "Previo", desc: "Mantenlo SIEMPRE activo antes de atacar (+40 PA extra)." },
-        { num: "2", skill: "Cargar Rango 1 (Tecla MOUSE 4)", stance: "Actitud de batalla", desc: "Carga desde lejos para generar Ira instantánea." },
-        { num: "3", skill: "Ataque de la victoria (Tecla MOUSE 5)", stance: "Actitud de batalla", desc: "¡GRATIS Y SANA 10%! Lánzalo si mataste a alguien hace <20s." },
-        { num: "4", skill: "Desgarrar Rango 3 (Tecla 1)", stance: "Actitud de batalla", desc: "Aplica Sangrado en el objetivo principal." },
-        { num: "5", skill: "Abrumar Rango 1 (Tecla 2)", stance: "Actitud de batalla", desc: "REACCIÓN: Lánzalo apenas la pantalla indique 'ESQUIVADO'." }
-      ],
-      taboo: "🛑 No uses Golpe Heroico (Tecla 3) a no ser que tengas más de 50 de Ira."
-    },
-    tank: {
-      title: "Rotación de Tanqueo en Mazmorras (Actitud Defensiva — 1H + Escudo)",
-      steps: [
-        { num: "1", skill: "Cargar / Cambiar a Defensiva (Mouse 4 ➔ Tecla R)", stance: "Batalla ➔ Defensiva", desc: "Carga e intercambia a Actitud Defensiva con la tecla R manteniendo tu Ira." },
-        { num: "2", skill: "Grito desmoralizador (Tecla 4)", stance: "Actitud defensiva", desc: "Genera amenaza en área instantánea a todos los enemigos." },
-        { num: "3", skill: "Hender armadura (Tecla 1)", stance: "Actitud defensiva", desc: "Aplica 1 Hender en el objetivo actual y rota con Tabulador." },
-        { num: "4", skill: "Revancha Rango 1 (Tecla 2)", stance: "Actitud defensiva", desc: "Súper amenaza por solo 5 de Ira al Parar/Esquivar/Bloquear." },
-        { num: "5", skill: "Provocar / Taunt (Tecla MOUSE 4)", stance: "Actitud defensiva", desc: "Obliga a un enemigo descarriado a atacarte a ti." },
-        { num: "6", skill: "Azote de escudo (Tecla MOUSE 5)", stance: "Actitud defensiva", desc: "Silencia a taumaturgos enemigos inmediatamente." }
-      ],
-      taboo: "💡 Usa Bloqueo con Escudo (Tecla 3) para garantizar un bloqueo y activar Revancha al instante."
-    }
-  },
-
-  // Tramos de herrería. "por" = materiales por creación. ~1 punto por creación (naranja/amarillo).
-  // Recetas basadas en Classic: verifícalas en WoW Forever.
-  herreria: [
-    { desde: 67, hasta: 75, receta: "Cinturón de cadenas de cobre", por: [["Barra de cobre", 6]] },
-    { desde: 75, hasta: 80, receta: "Piedra de moler gruesa", por: [["Piedra gruesa", 2]] },
-    { desde: 80, hasta: 100, receta: "Cinturón de cobre rúnico", por: [["Barra de cobre", 10]] },
-    { desde: 100, hasta: 105, receta: "Vara de plata", por: [["Barra de plata", 1], ["Piedra de moler basta", 2]] },
-    { desde: 105, hasta: 125, receta: "Leotardos de bronce bastos", por: [["Barra de bronce", 6]] },
-    { desde: 125, hasta: 150, receta: "Brazales de bronce con dibujos", por: [["Barra de bronce", 5]] }
-  ],
-
-  mineria: [
-    { desde: 65, hasta: 125, texto: "Estaño y plata: Loch Modan, Páramos, Bosque del Ocaso. Funde Bronce (1 cobre + 1 estaño)." },
-    { desde: 125, hasta: 150, texto: "Hierro (125) en Arathi, Desolace y Trabalomas. Aprende Minería Experto en 125." }
-  ],
-
-  metasIniciales: [
-    { id: "m-lvl30", texto: "Nivel 30: Golpes de barrido", tipo: "nivel", objetivo: 30 },
-    { id: "m-lvl40", texto: "Nivel 40: Malla + montura", tipo: "nivel", objetivo: 40 },
-    { id: "m-herr150", texto: "Herrería 150", tipo: "herreria", objetivo: 150 },
-    { id: "m-min150", texto: "Minería 150", tipo: "mineria", objetivo: 150 },
-    { id: "m-martillo", texto: "Conseguir Martillo de guerra de bronce", tipo: "manual" }
+  fury: [
+    { titulo: 'Más popular', fuente: 'Estadística talentsforever.com (#2 de guerrero)',
+      split: '17/33/0', arms: '30303213002', fury: '050530055120100231', prot: '',
+      url: 'https://talentsforever.com/warrior/60/30303213002-050530055120100231--12',
+      nota: 'Bloodthirst + Improved Whirlwind + Flurry. Toma Improved Execute en vez de Improved Berserker Rage.' },
+    { titulo: 'Icy Veins · Bloodthirst DW', fuente: 'Icy Veins (Abide), 4 nov 2026',
+      split: '18/33/0', arms: '30303213102', fury: '050530055102100231', prot: '',
+      url: 'https://www.icy-veins.com/wow-forever/fury-warrior-melee-dps-pve-spec-builds-talents',
+      nota: 'Igual que la popular pero con Spearing Strike e Improved Berserker Rage. Si Enrage rinde poco: 3/5 Enrage + 2/2 Imp. Execute.' }
   ]
 };
+
+// ---------- Orden de talentos al subir de nivel (Icy Veins) ----------
+// [nivel, árbol, índice del talento]. Del 10 al 40 verificado; luego ver calculadora.
+function expandir(pasos) { const out = []; let lvl = 10; pasos.forEach(([arbol, idx, n]) => { for (let k = 0; k < n; k++) out.push([lvl++, arbol, idx]); }); return out; }
+const LEVELEO = {
+  prot: { titulo: 'Protección (leveo con escudo)', calc: 'https://www.icy-veins.com/wow-forever/warrior-talent-calculator#tc-zzzzzCCCDDFFDEHJIIIHNNNMHOOOOOP222iiiiikkkkkqqqqqQ1~70755-d1899b7d',
+    guia: 'https://www.icy-veins.com/wow-forever/protection-warrior-leveling',
+    orden: expandir([['prot',1,5],['prot',4,3],['prot',5,2],['prot',7,2],['prot',5,1],['prot',6,1],['prot',9,1],['prot',11,1],['prot',10,3],['prot',9,1],['prot',15,3],['prot',14,1],['prot',9,1],['prot',16,5],['prot',17,1]]),
+    nota: 'Usa arma 2M hasta aprender Revancha (nv 14) y luego 1M + escudo. Muy segura, casi sin pausas para comer.' },
+  arms: { titulo: 'Armas (leveo 2M)', calc: 'https://www.icy-veins.com/wow-forever/warrior-talent-calculator#tc-22211553344467789997cbbddeedddgiiiiijjjjjqqqqqQyyaa~70755-d1899b7d',
+    guia: 'https://www.icy-veins.com/wow-forever/arms-warrior-leveling',
+    orden: expandir([['arms',2,3],['arms',1,2],['arms',5,2],['arms',3,2],['arms',4,3],['arms',6,1],['arms',7,2],['arms',8,1],['arms',9,3],['arms',7,1],['arms',12,1],['arms',11,2],['arms',13,2],['arms',14,2],['arms',13,3],['arms',16,1]]),
+    nota: 'Brutal contra 2 enemigos con Golpes de barrido (nv 30). Sin autosanación: depende de Ataque de la victoria, comida y vendas.' },
+  fury: { titulo: 'Furia (leveo doble arma)', calc: 'https://www.icy-veins.com/wow-forever/warrior-talent-calculator#tc-iiiiikkkkklllqqoooootQssqppvvvx2221133554446yyqq777~70755-d1899b7d',
+    guia: 'https://www.icy-veins.com/wow-forever/fury-warrior-leveling',
+    orden: expandir([['fury',1,5],['fury',3,5],['fury',4,3],['fury',7,2],['fury',8,5],['fury',12,1],['fury',9,1],['fury',11,2],['fury',7,1],['fury',15,2],['fury',16,3],['fury',17,1]]),
+    nota: 'Doble arma desde el nv 20 (débil hasta ~36 según Maxroll). Busca una mano izquierda rápida.' }
+};
+
+// ---------- Rotaciones (leveo, Icy Veins + Maxroll) ----------
+const ROTACIONES = {
+  prot: { titulo: 'Protección — un objetivo', pasos: [
+    ['battleShout', 'Siempre activo. Úsalo justo después de Ira sangrienta.'],
+    ['charge', 'Entra con Cargar (con Vanguard, nv 25, también en Actitud defensiva).'],
+    ['demoShout', 'Al empezar: reduce el daño que recibes de todo el grupo.'],
+    ['shieldBlock', 'Bloquea dos golpes → 10 de ira con Shield Specialization y activa Revancha.'],
+    ['revenge', 'Tu ataque principal: úsalo SIEMPRE que se ilumine.'],
+    ['shieldSlam', 'Desde nv 40: máxima prioridad junto a Revancha.'],
+    ['thunderClap', 'Con 2+ enemigos (CD 6 s, usable en Actitud defensiva en Forever).'],
+    ['sunder', 'Con ira sobrante en enemigos élite.'],
+    ['heroic', 'Solo con mucha ira sobrante (usa el golpe automático, no genera ira).']
+  ]},
+  arms: { titulo: 'Armas — un objetivo', pasos: [
+    ['battleShout', 'Siempre activo. Ira sangrienta entre pulls para no perder ira.'],
+    ['charge', 'Entra con Cargar en Actitud de batalla.'],
+    ['victory', 'Gratis, cura 10%: úsalo antes de que expire (20 s tras matar).'],
+    ['rend', 'Pronto, si el enemigo va a vivir el sangrado. Con Bloodthrill habilita Abrumar.'],
+    ['overpower', 'Al esquivar o con Bloodthrill. 5 de ira, +50% crítico: lo mejor que tienes.'],
+    ['mortalStrike', 'Desde nv 40 en CD (30 de ira, guárdala).'],
+    ['slam', 'Con ira sobrante; con Improved Slam no retrasa tu golpe.'],
+    ['execute', 'Por debajo del 20%: solo si no necesitas la ira para el siguiente pull.'],
+    ['heroic', 'Solo con ira excesiva.']
+  ]},
+  fury: { titulo: 'Furia — un objetivo', pasos: [
+    ['battleShout', 'Siempre activo.'],
+    ['charge', 'Entra con Cargar; luego Actitud rabiosa (nv 30).'],
+    ['whirlwind', 'Con Improved Whirlwind es la prioridad nº1 (CD 8 s).'],
+    ['bloodthirst', 'Desde nv 40 entre Torbellinos.'],
+    ['execute', 'Por debajo del 20%.'],
+    ['overpower', 'Cambia a Batalla al esquivar (Improved Tactical Mastery conserva ira).'],
+    ['heroic', 'Con la ira que sobre; Rajar con 2+ enemigos.']
+  ]}
+};
+
+// ---------- Macros ----------
+// {clave} se reemplaza por el nombre de la habilidad en TU cliente.
+// tecla = sugerencia según tu esquema (1-4, Q E R, Z X C, Mouse 4/5).
+const MACROS = [
+  { id: 'iniciador', titulo: 'Iniciador inteligente', tecla: 'M4', spec: ['prot','arms','fury'], lvl: 4,
+    desc: 'Fuera de combate: cambia a Batalla si hace falta y Carga. Activa el autoataque.',
+    txt: '#showtooltip {charge}\n/startattack\n/cast [nocombat,stance:1] {charge}; [nocombat] {battleStance}' },
+  { id: 'iniciador30', titulo: 'Cargar / Interceptar', tecla: 'M4', spec: ['arms','fury'], lvl: 30,
+    desc: 'Fuera de combate Carga; en combate cambia a Rabiosa e Intercepta. Una sola tecla para acercarte siempre.',
+    txt: '#showtooltip\n/startattack\n/cast [nocombat,stance:1] {charge}; [nocombat] {battleStance}; [stance:3] {intercept}; {berserkerStance}' },
+  { id: 'vanguard', titulo: 'Cargar tanque (con Vanguard)', tecla: 'M4', spec: ['prot'], lvl: 25,
+    desc: 'Con el talento Vanguard cargas en Actitud defensiva sin perder ira.',
+    txt: '#showtooltip {charge}\n/startattack\n/cast [nocombat,stance:1/2] {charge}; [@mouseover,harm,nodead][] {taunt}' },
+  { id: 'abrumar', titulo: 'Abrumar con cambio de actitud', tecla: '2', spec: ['arms','fury','prot'], lvl: 12,
+    desc: 'Si no estás en Batalla, primer clic cambia de actitud, segundo clic Abrumar.',
+    txt: '#showtooltip {overpower}\n/startattack\n/cast [stance:1] {overpower}; {battleStance}' },
+  { id: 'revancha', titulo: 'Revancha', tecla: '2', spec: ['prot'], lvl: 14,
+    desc: 'Revancha en Defensiva; si estás en otra actitud, cambia primero.',
+    txt: '#showtooltip {revenge}\n/startattack\n/cast [stance:2] {revenge}; {defStance}' },
+  { id: 'bloqueo', titulo: 'Bloqueo con escudo', tecla: '3', spec: ['prot'], lvl: 16,
+    desc: 'Activa Revancha y da ira con Shield Specialization.',
+    txt: '#showtooltip {shieldBlock}\n/cast [stance:2] {shieldBlock}; {defStance}' },
+  { id: 'interrumpir', titulo: 'Interrumpir (mouseover)', tecla: 'M5', spec: ['prot','arms','fury'], lvl: 12,
+    desc: 'Azote de escudo al enemigo bajo el ratón sin cambiar de objetivo (Icy Veins). Requiere escudo.',
+    txt: '#showtooltip {shieldBash}\n/cast [@mouseover,harm,nodead][] {shieldBash}' },
+  { id: 'zurrar', titulo: 'Zurrar (mouseover)', tecla: 'M5', spec: ['arms','fury'], lvl: 30,
+    desc: 'Interrupción sin escudo en Actitud rabiosa; cambia de actitud si hace falta.',
+    txt: '#showtooltip {pummel}\n/cast [stance:3,@mouseover,harm,nodead][stance:3] {pummel}; {berserkerStance}' },
+  { id: 'provocar', titulo: 'Provocar (mouseover)', tecla: 'Q', spec: ['prot'], lvl: 10,
+    desc: 'Recupera el mob que se escapa sin perder tu objetivo.',
+    txt: '#showtooltip {taunt}\n/cast [@mouseover,harm,nodead][] {taunt}' },
+  { id: 'hender', titulo: 'Hender + autoataque', tecla: '1', spec: ['prot'], lvl: 10,
+    desc: 'Nunca te quedas quieto sin golpear.',
+    txt: '#showtooltip {sunder}\n/startattack\n/cast {sunder}' },
+  { id: 'desgarrar', titulo: 'Desgarrar + autoataque', tecla: '1', spec: ['arms','fury'], lvl: 4,
+    desc: 'Clave para Bloodthrill en Armas.',
+    txt: '#showtooltip {rend}\n/startattack\n/cast [stance:1/2] {rend}; {battleStance}' },
+  { id: 'heroico', titulo: 'Golpe heroico / Rajar', tecla: '3', spec: ['arms','fury'], lvl: 20,
+    desc: 'Shift = Rajar (varios enemigos). Úsalo solo con ira sobrante.',
+    txt: '#showtooltip\n/startattack\n/cast [mod:shift] {cleave}; {heroic}' },
+  { id: 'victoria', titulo: 'Ataque de la victoria', tecla: 'M5', spec: ['arms','fury','prot'], lvl: 20,
+    desc: 'Gratis y cura 10%. En DPS ponlo en M5; en tanque, donde quieras.',
+    txt: '#showtooltip {victory}\n/startattack\n/cast {victory}' },
+  { id: 'apertura', titulo: 'Ira sangrienta + Grito de batalla', tecla: 'Z', spec: ['arms','fury','prot'], lvl: 10,
+    desc: 'Ira sangrienta no gasta tiempo global: un clic = ira + grito.',
+    txt: '#showtooltip {battleShout}\n/cast {bloodrage}\n/cast {battleShout}' },
+  { id: 'atronar', titulo: 'Atronar', tecla: '4', spec: ['prot','arms'], lvl: 6,
+    desc: 'En Forever se puede usar en Batalla y Defensiva (CD 6 s).',
+    txt: '#showtooltip {thunderClap}\n/cast [stance:1/2] {thunderClap}; {battleStance}' },
+  { id: 'ejecutar', titulo: 'Ejecutar', tecla: 'E', spec: ['arms','fury'], lvl: 24,
+    desc: 'Funciona en Batalla y Rabiosa; cambia si estás en Defensiva.',
+    txt: '#showtooltip {execute}\n/cast [stance:1/3] {execute}; {battleStance}' },
+  { id: 'emergencia', titulo: 'Botón de pánico', tecla: 'C', spec: ['prot','arms','fury'], lvl: 28,
+    desc: 'Forma de piedra (enano) + Muro de escudo. Shift = solo Forma de piedra.',
+    txt: '#showtooltip\n/cast {stoneform}\n/cast [nomod,stance:2] {shieldWall}; [nomod] {defStance}' },
+  { id: 'seccionar', titulo: 'Seccionar (mobs que huyen)', tecla: 'Q', spec: ['arms','fury'], lvl: 8,
+    desc: 'Los humanoides huyen al 15%: frénalos antes de que traigan amigos.',
+    txt: '#showtooltip {hamstring}\n/cast [stance:1/3] {hamstring}; {battleStance}' },
+  { id: 'rabia', titulo: 'Romper miedo (Ira rabiosa)', tecla: 'X', spec: ['arms','fury','prot'], lvl: 30,
+    desc: 'Inmune a miedo. También genera ira.',
+    txt: '#showtooltip {berserkerRage}\n/cast [stance:3] {berserkerRage}; {berserkerStance}' },
+  { id: 'modo', titulo: 'Modo Tanque ⇄ DPS (cambia arma y actitud)', tecla: 'R', spec: ['prot','arms','fury'], lvl: 10, personal: true,
+    desc: 'Usa TUS armas (de tu SimC/addon). En Batalla → pasa a Defensiva y equipa 1M + escudo; en Defensiva → Batalla y arma 2M.',
+    txt: '#showtooltip\n/cast [stance:1] {defStance}; {battleStance}\n/equipslot [stance:1] 16 {arma1M}\n/equipslot [stance:1] 17 {escudo}\n/equipslot [stance:2] 16 {arma2M}' }
+];
+
+// ---------- Equipo para tu rango (Icy Veins leveo, IDs de Wowhead Forever) ----------
+// f: 'A' solo Alianza, 'H' solo Horda. Se ocultan los de Horda (eres enano).
+const MEJORAS = {
+  'Arma 2M': [
+    [7230, 'Mr. Smite · Las Minas de la Muerte'], [279895, 'Misión "Old Ironforge Incursion" · Hall of Thanes', 'A'],
+    [271217, 'Bjork · Ruins of Lordaeron'], [5187, "Rhahk'Zor · Las Minas de la Muerte"], [6214, 'Herrería'],
+    [1264, 'Misión "The Fury Runs Deep" · Las Mazmorras', 'A'], [279841, 'Misión "Heart of Disruption" · City of Dalaran', 'A'],
+    [273046, 'Unstable Sentinel · City of Dalaran'], [6687, 'Overlord Ramtusk · Horado Rajacieno'],
+    [6909, "Aku'mai · Cavernas de Brazanegra"], [6905, 'Gelihast · Cavernas de Brazanegra'], [271766, 'Misión "Prehistoric Prism" · Excavation Site: Wetlands']
+  ],
+  'Arma 1M (tanque)': [
+    [5197, 'Cookie · Las Minas de la Muerte'], [273809, 'Hamhock · Las Mazmorras', 'A'], [1937, 'Sneed · Las Minas de la Muerte'],
+    [1951, 'Piratas Defias · Las Minas de la Muerte'], [271204, 'The Baron · Ruins of Lordaeron'], [270256, 'Durgen Dirgehammer · Hall of Thanes', 'A'],
+    [6220, 'Archimago Arugal · Castillo de Colmillo Oscuro'], [6323, 'Barón Silverlaine · Castillo de Colmillo Oscuro'],
+    [6633, 'Razorclaw · Castillo de Colmillo Oscuro'], [11121, 'Lady Sarevess · Cavernas de Brazanegra'],
+    [6692, 'Charlga Razorflank · Horado Rajacieno'], [6681, 'Aggem Thorncurse · Horado Rajacieno'], [6979, 'Misión "Dead-tooth Jack" · Elwynn', 'A'], [2847, 'Herrería']
+  ],
+  'Escudo': [
+    [273811, 'Hamhock · Las Mazmorras', 'A'], [271213, "Rath'mael · Ruins of Lordaeron"], [6223, 'Misión "Bride of the Embalmer" · Bosque del Ocaso', 'A'],
+    [7002, 'Misión "Blackfathom Villainy" · Brazanegra'], [1276, "Misión \"Tharil'zun\" · Montañas Crestagrana", 'A'],
+    [6725, 'Misión "The Crone of the Kraul" · Horado Rajacieno'], [13245, 'Kresh · Cuevas de los Lamentos']
+  ],
+  'Armadura (Herrería)': [
+    [250518, 'Herrería · se liga al recogerlo'], [250488, 'Herrería · se liga al recogerlo'], [250528, 'Herrería · se liga al recogerlo'],
+    [250523, 'Herrería · se liga al recogerlo'], [250508, 'Herrería · se liga al recogerlo'], [250513, 'Herrería · se liga al recogerlo'],
+    [250556, 'Herrería · se liga al recogerlo'], [250503, 'Herrería · se liga al recogerlo'], [7915, 'Herrería'], [7913, 'Herrería'], [3480, 'Herrería']
+  ],
+  'Armadura (mazmorra)': [[6460, 'Lord Cobrahn · Cuevas de los Lamentos']],
+  'Anillos': [[270053, 'Misión "The Legend of Stalvan" · Bosque del Ocaso', 'A'], [2933, 'Misión "An Audience with the King" · Ventormenta', 'A']]
+};
+
+// ---------- Mazmorras (rangos de Maxroll) ----------
+const MAZMORRAS = [
+  { n: 'Hall of Thanes', r: [13, 18], f: 'A', nuevo: 1, loot: [279895, 270256] },
+  { n: 'Ruins of Lordaeron', r: [15, 20], nuevo: 1, loot: [271217, 271204, 271213] },
+  { n: 'Castillo de Colmillo Oscuro', r: [17, 22], loot: [6220, 6323, 6633] },
+  { n: 'Las Minas de la Muerte', r: [18, 23], loot: [7230, 5187, 5197, 1937] },
+  { n: 'Cuevas de los Lamentos', r: [18, 23], loot: [6460, 13245] },
+  { n: 'Las Mazmorras (Stockade)', r: [25, 30], loot: [1264, 273809, 273811] },
+  { n: 'City of Dalaran', r: [25, 30], nuevo: 1, loot: [279841, 273046] },
+  { n: 'Horado Rajacieno', r: [25, 30], aprox: 1, loot: [6687, 6692, 6681, 6725] },
+  { n: 'Cavernas de Brazanegra', r: [27, 32], loot: [6909, 6905, 11121, 7002] },
+  { n: 'Monasterio Escarlata: Cementerio', r: [27, 32], loot: [] },
+  { n: 'Gnomeregan', r: [29, 34], loot: [] },
+  { n: 'Excavation Site: Wetlands', r: [31, 36], nuevo: 1, loot: [271766] }
+];
+
+// ---------- Hitos por nivel (Maxroll + Icy Veins) ----------
+const HITOS = [
+  [10, 'Misión de Actitud defensiva (Kharanos). Provocar y Hender armadura.'],
+  [12, 'Abrumar y Azote de escudo.'],
+  [20, 'Rajar, Ataque de la victoria, Embate y Represalias. Doble arma (Furia).'],
+  [24, 'Ejecutar, nuevos rangos de Golpe heroico, Grito de batalla y Hender.'],
+  [30, 'Misión "The Islander": Actitud rabiosa, Interceptar, Ira rabiosa. Golpes de barrido (Armas).'],
+  [32, 'Nuevos rangos de Golpe heroico, Ejecutar y Grito de batalla.'],
+  [36, 'Torbellino.'],
+  [40, 'Golpe mortal / Sed de sangre / Embate con escudo. Armadura de placas. Montura (100 oro en total).'],
+  [44, 'Interceptar y Abrumar mejorados.'],
+  [50, 'Temeridad.']
+];
+
+// ---------- Herrería (recetas de Classic, verifícalas en Forever) ----------
+const HERRERIA = [
+  { desde: 67, hasta: 75, receta: 'Cinturón de cadenas de cobre', por: [['Barra de cobre', 6]] },
+  { desde: 75, hasta: 80, receta: 'Piedra de moler gruesa', por: [['Piedra gruesa', 2]] },
+  { desde: 80, hasta: 100, receta: 'Cinturón de cobre rúnico', por: [['Barra de cobre', 10]] },
+  { desde: 100, hasta: 105, receta: 'Vara de plata', por: [['Barra de plata', 1], ['Piedra de moler basta', 2]] },
+  { desde: 105, hasta: 125, receta: 'Leotardos de bronce bastos', por: [['Barra de bronce', 6]] },
+  { desde: 125, hasta: 150, receta: 'Brazales de bronce con dibujos', por: [['Barra de bronce', 5]] }
+];
+const MINERIA = [
+  { desde: 65, hasta: 125, texto: 'Estaño y plata: Loch Modan, Páramos de Poniente, Bosque del Ocaso. Funde bronce (1 cobre + 1 estaño).' },
+  { desde: 125, hasta: 150, texto: 'Hierro desde 125: Arathi, Desolace, Trabalomas. Entrena Minería Experto en 125.' }
+];
+
+// ---------- Habilidades con armas (IDs de skill de SimC) ----------
+const SKILLS_ARMAS = { 43: 'Espadas', 44: 'Hachas', 54: 'Mazas', 55: 'Espadas 2M', 160: 'Mazas 2M', 172: 'Hachas 2M', 229: 'Armas de asta', 136: 'Bastones', 173: 'Dagas', 162: 'Sin armas', 46: 'Armas de fuego', 45: 'Arcos', 226: 'Ballestas', 176: 'Arrojadizas', 95: 'Defensa' };
+const SKILLS_PROF = { 164: 'Herrería', 186: 'Minería', 185: 'Cocina', 129: 'Primeros auxilios', 356: 'Pesca', 393: 'Desuello', 182: 'Herboristería', 165: 'Peletería', 333: 'Encantamiento', 202: 'Ingeniería', 197: 'Sastrería', 171: 'Alquimia' };
+
+const METAS_INICIALES = [
+  { id: 'm-lvl30', texto: 'Nivel 30: Actitud rabiosa', tipo: 'nivel', objetivo: 30 },
+  { id: 'm-lvl40', texto: 'Nivel 40: placas + montura', tipo: 'nivel', objetivo: 40 },
+  { id: 'm-oro', texto: '100 oro para la montura', tipo: 'oro', objetivo: 100 },
+  { id: 'm-herr150', texto: 'Herrería 150', tipo: 'herreria', objetivo: 150 },
+  { id: 'm-min150', texto: 'Minería 150', tipo: 'mineria', objetivo: 150 }
+];
+
+const RECURSOS = [
+  { grupo: 'Guías de WoW Forever', items: [
+    ['Wowhead · WoW Forever', 'https://www.wowhead.com/forever/es/guides/classes/warrior', 'Base de datos, guías y tooltips (la usa esta página).'],
+    ['Icy Veins · Guerrero Forever', 'https://www.icy-veins.com/wow-forever/warrior-class-overview', 'Builds, leveo por nivel, rotaciones y equipo. Fuente principal de esta guía.'],
+    ['Maxroll · Leveo de guerrero', 'https://maxroll.gg/wow-forever/class-guides/warrior-leveling-guide', 'Habilidades por nivel, mazmorras y profesiones.'],
+    ['Warcraft Tavern · Guerrero', 'https://www.warcrafttavern.com/forever/guides/warrior/', 'Builds, cambios de ira y actitudes, razas.'],
+    ['Mobalytics · Protección', 'https://mobalytics.gg/wow-forever/classes/protection-warrior-guide-kalltorak', 'Guía de tanque de leveo a 60.']
+  ]},
+  { grupo: 'Estadísticas de builds (Forever)', items: [
+    ['talentsforever.com', 'https://talentsforever.com/warrior', 'Calculadora con estadísticas: 108k builds planeadas, populares tras hotfixes.'],
+    ['wowforevertalent.com', 'https://wowforevertalent.com/warrior/', '12.622 builds completas analizadas, % por especialización y talento.'],
+    ['ForeverChanges', 'https://foreverchanges.pro/class/warrior', 'Qué cambió del guerrero respecto a Classic.']
+  ]},
+  { grupo: 'Herramientas', items: [
+    ['SimulationCraft (addon)', 'https://www.curseforge.com/wow/addons/simulationcraft', 'Exporta tu personaje con /simc. Compatible con 1.60.1.'],
+    ['Warcraft Logs', 'https://www.warcraftlogs.com/', 'Registros de combate (cuando haya bandas de Forever).']
+  ]},
+  { grupo: 'Retail (aún sin datos de Forever)', items: [
+    ['Archon.gg', 'https://archon.gg/', 'Builds más usadas en bandas y M+ de retail.'],
+    ['Murlok.io', 'https://murlok.io/', 'Top 50 de M+ y PvP de retail.'],
+    ['Raider.io', 'https://raider.io/', 'Rankings de M+ de retail.'],
+    ['Raidbots', 'https://www.raidbots.com/', 'Simulación de retail.']
+  ]}
+];
