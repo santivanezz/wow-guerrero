@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Guerrero WoW Forever</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin: 0 auto; height: 300px; }
+        .chart-wide { position: relative; width: 100%; height: 300px; }
+        @media (min-width: 768px) { .chart-container, .chart-wide { height: 340px; } }
+        .tab-btn { color: #94a3b8; }
+        .tab-btn:hover { color: #e2e8f0; }
+        .tab-btn.active { border-bottom: 3px solid #f59e0b; color: #f59e0b; background-color: rgba(245, 158, 11, 0.1); }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
+        .inp { width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: .5rem; padding: .45rem .6rem; font-size: .8rem; color: #f8fafc; }
+        .inp:focus { outline: none; border-color: #f59e0b; box-shadow: 0 0 0 2px rgba(245,158,11,.25); }
+        .lbl { display: block; font-size: .7rem; color: #94a3b8; margin-bottom: .2rem; font-weight: 600; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-900 text-slate-100">
+
+    <!-- Header -->
+    <header class="bg-slate-950 border-b border-amber-600/30 sticky top-0 z-50 bg-opacity-95">
+        <div class="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">⚔️</span>
+                    <div>
+                        <h1 id="hdr-titulo" class="text-xl font-bold text-amber-500 tracking-wide">GUERRERO</h1>
+                        <p class="text-xs text-slate-400">World of Warcraft: Forever · <span id="hdr-actualizado"></span></p>
+                    </div>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 text-xs">
+                    <div class="bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-2">
+                        <span class="text-amber-400 font-bold">⛏️ Minería:</span><span id="hdr-mineria" class="text-white font-mono"></span>
+                    </div>
+                    <div class="bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-2">
+                        <span class="text-amber-400 font-bold">🔨 Herrería:</span><span id="hdr-herreria" class="text-white font-mono"></span>
+                    </div>
+                    <div class="bg-amber-950/60 border border-amber-600/50 px-3 py-1.5 rounded-lg text-amber-300 font-medium">🛡️ Tanque / Misiones</div>
+                </div>
+            </div>
+
+            <nav class="flex gap-1 mt-3 border-t border-slate-800 pt-2 overflow-x-auto custom-scrollbar">
+                <button onclick="switchTab('tab-progreso')" data-tab="tab-progreso" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-md transition-colors whitespace-nowrap">📊 Mi Progreso</button>
+                <button onclick="switchTab('tab-diario')" data-tab="tab-diario" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-md transition-colors whitespace-nowrap">📓 Diario</button>
+                <button onclick="switchTab('tab-keybinds')" data-tab="tab-keybinds" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-md transition-colors whitespace-nowrap">⌨️ Teclas</button>
+                <button onclick="switchTab('tab-rotacion')" data-tab="tab-rotacion" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-md transition-colors whitespace-nowrap">⚡ Rotación</button>
+                <button onclick="switchTab('tab-talentos')" data-tab="tab-talentos" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-md transition-colors whitespace-nowrap">⚖️ Talentos</button>
+                <button onclick="switchTab('tab-herreria')" data-tab="tab-herreria" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-md transition-colors whitespace-nowrap">🔨 Equipo BiS</button>
+                <button onclick="switchTab('tab-ruta')" data-tab="tab-ruta" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-md transition-colors whitespace-nowrap">🗺️ Ruta 18-35</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6 sm:px-6 lg:px-8">
+
+        <!-- ============ MI PROGRESO ============ -->
+        <div id="tab-progreso" class="space-y-6 hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <section class="bg-slate-800/90 border border-amber-500/40 rounded-xl p-5" id="prog-personaje"></section>
+
+                <section class="bg-slate-800/90 border border-slate-700 rounded-xl p-5 space-y-3">
+                    <h2 class="text-base font-bold text-amber-400">Profesiones</h2>
+                    <div id="prog-profesiones" class="space-y-3"></div>
+                </section>
+
+                <section class="bg-slate-800/90 border border-slate-700 rounded-xl p-5">
+                    <h2 class="text-base font-bold text-amber-400 mb-3">🎯 Metas</h2>
+                    <ul id="prog-metas" class="space-y-2"></ul>
+                    <form onsubmit="agregarMeta(event)" class="flex gap-2 mt-3">
+                        <input name="texto" class="inp" placeholder="Nueva meta (ej. Montura a nivel 40)" maxlength="80">
+                        <button class="px-3 bg-slate-700 hover:bg-amber-600 rounded-lg text-xs font-bold">+</button>
+                    </form>
+                </section>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                <section class="lg:col-span-2 bg-slate-800/90 border border-slate-700 rounded-xl p-5">
+                    <h2 class="text-base font-bold text-amber-400 mb-1">✏️ Actualizar todo</h2>
+                    <p class="text-xs text-slate-400 mb-4">Edita los valores y pulsa Guardar. Para cambios rápidos usa los botones +1 / +5.</p>
+                    <form id="form-editar" onsubmit="guardarEdicion(event)" class="grid grid-cols-2 gap-3">
+                        <div class="col-span-2"><label class="lbl">Nombre del personaje</label><input name="nombre" class="inp" maxlength="24"></div>
+                        <div><label class="lbl">Reino</label><input name="reino" class="inp" maxlength="30"></div>
+                        <div><label class="lbl">Raza</label><input name="raza" class="inp" maxlength="20"></div>
+                        <div><label class="lbl">Nivel</label><input name="nivel" type="number" min="1" max="60" class="inp"></div>
+                        <div><label class="lbl">Oro (g)</label><input name="oro" type="number" min="0" step="0.01" class="inp"></div>
+                        <div><label class="lbl">XP actual</label><input name="xp" type="number" min="0" class="inp"></div>
+                        <div><label class="lbl">XP para subir</label><input name="xpMax" type="number" min="0" class="inp"></div>
+                        <div><label class="lbl">⛏️ Minería</label><input name="mineria" type="number" min="0" max="300" class="inp"></div>
+                        <div><label class="lbl">Tope minería</label><input name="mineriaMax" type="number" min="1" max="300" class="inp"></div>
+                        <div><label class="lbl">🔨 Herrería</label><input name="herreria" type="number" min="0" max="300" class="inp"></div>
+                        <div><label class="lbl">Tope herrería</label><input name="herreriaMax" type="number" min="1" max="300" class="inp"></div>
+                        <button class="col-span-2 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm rounded-lg">💾 Guardar</button>
+                    </form>
+                </section>
+
+                <section class="lg:col-span-3 bg-slate-800/90 border border-slate-700 rounded-xl p-5">
+                    <h2 class="text-base font-bold text-amber-400 mb-1">🔨 Materiales de Herrería hasta 150</h2>
+                    <p class="text-xs text-slate-400 mb-3">Se recalcula con tu nivel de herrería. Aproximado (~1 punto por creación). Recetas de Classic: verifícalas en el juego.</p>
+                    <div id="prog-materiales"></div>
+                </section>
+            </div>
+
+            <section class="bg-slate-800/90 border border-slate-700 rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-base font-bold text-amber-400">📦 Respaldo</h2>
+                    <p class="text-xs text-slate-400">Tu progreso se guarda en este navegador. Descarga un respaldo de vez en cuando.</p>
+                    <p id="respaldo-estado" class="text-xs mt-1"></p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="exportar()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg">⬇️ Exportar JSON</button>
+                    <label class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-100 font-bold text-xs rounded-lg cursor-pointer">⬆️ Importar JSON
+                        <input type="file" accept="application/json,.json" onchange="importar(event)" class="hidden">
+                    </label>
+                    <button onclick="reiniciar()" class="px-4 py-2 bg-slate-900 hover:bg-red-900 border border-red-800/60 text-red-300 font-bold text-xs rounded-lg">Reiniciar</button>
+                </div>
+            </section>
+        </div>
+
+        <!-- ============ DIARIO ============ -->
+        <div id="tab-diario" class="space-y-6 hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                <section class="lg:col-span-2 bg-slate-800/90 border border-slate-700 rounded-xl p-5">
+                    <h2 class="text-base font-bold text-amber-400 mb-1">📝 Registrar sesión</h2>
+                    <p class="text-xs text-slate-400 mb-4">Al terminar de jugar. También actualiza tu progreso actual.</p>
+                    <form id="form-diario" onsubmit="guardarSesion(event)" class="grid grid-cols-2 gap-3">
+                        <div><label class="lbl">Fecha</label><input name="fecha" type="date" class="inp" required></div>
+                        <div><label class="lbl">Nivel</label><input name="nivel" type="number" min="1" max="60" class="inp"></div>
+                        <div><label class="lbl">XP actual</label><input name="xp" type="number" min="0" class="inp"></div>
+                        <div><label class="lbl">Oro (g)</label><input name="oro" type="number" min="0" step="0.01" class="inp"></div>
+                        <div><label class="lbl">⛏️ Minería</label><input name="mineria" type="number" min="0" max="300" class="inp"></div>
+                        <div><label class="lbl">🔨 Herrería</label><input name="herreria" type="number" min="0" max="300" class="inp"></div>
+                        <div class="col-span-2"><label class="lbl">¿Qué hiciste?</label><textarea name="notas" rows="3" class="inp" maxlength="1000" placeholder="Misiones, mazmorras, zona..."></textarea></div>
+                        <div class="col-span-2"><label class="lbl">🎁 Botín destacado</label><input name="loot" class="inp" maxlength="200" placeholder="Ej. Guantes de garra de ogro"></div>
+                        <button class="col-span-2 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm rounded-lg">📓 Guardar sesión</button>
+                    </form>
+                </section>
+                <section class="lg:col-span-3 bg-slate-800/90 border border-slate-700 rounded-xl p-5">
+                    <h2 class="text-base font-bold text-amber-400 mb-3">📈 Evolución</h2>
+                    <p id="diario-chart-vacio" class="text-sm text-slate-400">El gráfico aparece cuando tengas al menos 2 sesiones registradas.</p>
+                    <div class="chart-wide"><canvas id="chartDiario"></canvas></div>
+                </section>
+            </div>
+            <section class="bg-slate-800/90 border border-slate-700 rounded-xl p-5">
+                <h2 class="text-base font-bold text-amber-400 mb-3">Historial</h2>
+                <div id="diario-lista" class="space-y-2"></div>
+            </section>
+        </div>
+
+        <!-- ============ TECLAS ============ -->
+        <div id="tab-keybinds" class="space-y-6 hidden">
+            <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-5 shadow-lg">
+                <h2 class="text-lg font-bold text-amber-400 mb-2">Esquema Óptimo de Teclas (Keybinding Layout)</h2>
+                <p class="text-sm text-slate-300 leading-relaxed">
+                    Tus 12 teclas (<strong>1, 2, 3, 4, Q, E, R, Z, X, C, Mouse 4 y Mouse 5</strong>) priorizando el movimiento con <em>WASD</em>, la reacción rápida en el ratón y la fluidez para cambiar de actitud (<em>Stance Dancing</em>).
+                </p>
+            </div>
+
+            <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-5">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 border-b border-slate-700 pb-3">
+                    <h3 class="text-base font-bold text-slate-200">Asignación Visual por Tecla:</h3>
+                    <div class="flex flex-wrap gap-2 text-xs">
+                        <span class="px-2.5 py-1 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded font-semibold">Modo Solo (Batalla)</span>
+                        <span class="px-2.5 py-1 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded font-semibold">Modo Tanque (Defensiva)</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-slate-900 border-2 border-amber-500/60 p-4 rounded-xl space-y-3">
+                        <div class="font-bold text-amber-400 text-xs border-b border-slate-800 pb-2 flex items-center justify-between"><span>🖱️ RATÓN (Acción Inmediata)</span><span class="text-[10px] text-slate-400">Pulgar</span></div>
+                        <div class="space-y-2">
+                            <div class="bg-slate-800 p-2.5 rounded-lg border border-slate-700">
+                                <div class="font-mono text-amber-300 font-bold text-xs flex justify-between"><span>MOUSE 4</span><span class="text-[10px] text-slate-400">Iniciador</span></div>
+                                <div class="text-[11px] text-amber-400 font-semibold mt-1">⚔️ Cargar (Charge)</div>
+                                <div class="text-[11px] text-blue-400 font-semibold">🛡️ Provocar (Taunt)</div>
+                                <p class="text-[10px] text-slate-400 mt-1">Iniciar combates o recuperar un mob suelto.</p>
+                            </div>
+                            <div class="bg-slate-800 p-2.5 rounded-lg border border-slate-700">
+                                <div class="font-mono text-amber-300 font-bold text-xs flex justify-between"><span>MOUSE 5</span><span class="text-[10px] text-slate-400">Reacción</span></div>
+                                <div class="text-[11px] text-amber-400 font-semibold mt-1">⚔️ Ataque de la victoria</div>
+                                <div class="text-[11px] text-blue-400 font-semibold">🛡️ Azote de escudo (Corta Hechizos)</div>
+                                <p class="text-[10px] text-slate-400 mt-1">Cortar castings o ejecutar al instante.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-700 p-4 rounded-xl space-y-3">
+                        <div class="font-bold text-slate-200 text-xs border-b border-slate-800 pb-2">🔢 NÚMEROS (Spam Principal)</div>
+                        <div class="space-y-2 text-xs">
+                            <div class="p-2 bg-slate-800 rounded border border-slate-700"><span class="font-mono font-bold text-amber-400">1:</span> <span class="text-amber-300">Desgarrar (Rend)</span> / <span class="text-blue-300">Hender armadura</span></div>
+                            <div class="p-2 bg-slate-800 rounded border border-slate-700"><span class="font-mono font-bold text-amber-400">2:</span> <span class="text-amber-300">Abrumar (Overpower)</span> / <span class="text-blue-300">Revancha (Revenge)</span></div>
+                            <div class="p-2 bg-slate-800 rounded border border-slate-700"><span class="font-mono font-bold text-amber-400">3:</span> <span class="text-amber-300">Golpe heroico</span> / <span class="text-blue-300">Bloqueo con escudo</span></div>
+                            <div class="p-2 bg-slate-800 rounded border border-slate-700"><span class="font-mono font-bold text-amber-400">4:</span> <span class="text-amber-300">Atronar (AoE)</span> / <span class="text-blue-300">Grito desmoralizador</span></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-700 p-4 rounded-xl space-y-3">
+                        <div class="font-bold text-slate-200 text-xs border-b border-slate-800 pb-2">🖐️ TECLAS SUPERIORES (Ágiles)</div>
+                        <div class="space-y-2 text-xs">
+                            <div class="p-2 bg-slate-800 rounded border border-slate-700"><span class="font-mono font-bold text-amber-400">Q:</span> <span class="text-amber-300">Seccionar (Frenar mob)</span> / <span class="text-blue-300">Desarmar</span><p class="text-[10px] text-slate-400 mt-0.5">Control de masas directo junto a A.</p></div>
+                            <div class="p-2 bg-slate-800 rounded border border-slate-700"><span class="font-mono font-bold text-amber-400">E:</span> <span class="text-amber-300">Rajar (Cleave)</span> / <span class="text-blue-300">Falsa arremetida</span><p class="text-[10px] text-slate-400 mt-0.5">Acceso rápido con el dedo índice.</p></div>
+                            <div class="p-2 bg-amber-950/50 rounded border border-amber-500/50"><span class="font-mono font-bold text-amber-400">R:</span> <span class="text-amber-300 font-bold">CAMBIO DE ACTITUD (Stance)</span><p class="text-[10px] text-amber-200/80 mt-0.5">Alterna Batalla ↔ Defensiva al instante.</p></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-700 p-4 rounded-xl space-y-3">
+                        <div class="font-bold text-slate-200 text-xs border-b border-slate-800 pb-2">🔻 TECLAS INFERIORES (Buffs & CD)</div>
+                        <div class="space-y-2 text-xs">
+                            <div class="p-2 bg-slate-800 rounded border border-slate-700"><span class="font-mono font-bold text-amber-400">Z:</span> <span class="text-amber-300">Ira sangrienta (Bloodrage)</span><p class="text-[10px] text-slate-400 mt-0.5">Genera Ira antes de entablar combate.</p></div>
+                            <div class="p-2 bg-slate-800 rounded border border-slate-700"><span class="font-mono font-bold text-amber-400">X:</span> <span class="text-amber-300">Grito de batalla (Battle Shout)</span><p class="text-[10px] text-slate-400 mt-0.5">Buff de Poder de Ataque siempre activo.</p></div>
+                            <div class="p-2 bg-slate-800 rounded border border-slate-700"><span class="font-mono font-bold text-amber-400">C:</span> <span class="text-amber-300">Forma de piedra (Racial)</span> / <span class="text-red-300">Represalias</span><p class="text-[10px] text-slate-400 mt-0.5">Defensivo de emergencia Enano o CD de 30 min.</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-4 flex items-start gap-3 text-xs">
+                <span class="text-2xl">💡</span>
+                <div>
+                    <div class="font-bold text-amber-400">CONSEJO DE MOVIMIENTO (WASD):</div>
+                    <p class="text-slate-300">Reasigna <strong>A</strong> y <strong>D</strong> a "Desplazamiento lateral" (Strafe) y gira con clic derecho. Así liberas <strong>Q y E</strong> para habilidades sin perder control.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ ROTACIÓN ============ -->
+        <div id="tab-rotacion" class="space-y-6 hidden">
+            <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-5 shadow-lg">
+                <h2 class="text-lg font-bold text-amber-400 mb-2">Rotación basada en tus Habilidades Actuales</h2>
+                <p class="text-sm text-slate-300 leading-relaxed">Secuencia optimizada para no gastar Ira en vano y maximizar tu supervivencia.</p>
+            </div>
+            <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-5">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 border-b border-slate-700 pb-3">
+                    <h3 class="text-base font-bold text-slate-200">Escenario de Combate:</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="switchRotationMode('solo')" id="btn-rot-solo" class="px-4 py-2 bg-amber-500 text-slate-950 font-bold text-xs rounded-lg">⚔️ Solo DPS (2H)</button>
+                        <button onclick="switchRotationMode('tank')" id="btn-rot-tank" class="px-4 py-2 bg-slate-700 text-slate-200 font-bold text-xs rounded-lg">🛡️ Tanque (1H + Escudo)</button>
+                    </div>
+                </div>
+                <div id="rotation-display-container"></div>
+            </div>
+        </div>
+
+        <!-- ============ TALENTOS ============ -->
+        <div id="tab-talentos" class="space-y-6 hidden">
+            <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-5 shadow-lg">
+                <h2 class="text-lg font-bold text-amber-400 mb-2">¿Armas, Furia o Protección?</h2>
+                <p class="text-sm text-slate-300 leading-relaxed">
+                    <strong>Armas</strong> es la mejor elección para subir de nivel en solitario y tanquear mazmorras entre 20 y 40. Con <em>Actitud defensiva, Hender armadura, Provocar, Revancha y Azote de escudo</em> puedes tanquear sin invertir puntos en Protección.
+                </p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div class="lg:col-span-5 bg-slate-800/90 border border-slate-700 rounded-xl p-5">
+                    <h3 class="text-md font-semibold text-slate-200 mb-1">Eficacia por Especialización</h3>
+                    <p class="text-xs text-slate-400 mb-4">Misiones en solitario + tanqueo de mazmorras de 5.</p>
+                    <div class="chart-container"><canvas id="chartSpecEfficiency"></canvas></div>
+                </div>
+                <div class="lg:col-span-7">
+                    <div class="bg-slate-800 border-2 border-amber-500/80 rounded-xl p-4 pt-8 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-amber-500 text-slate-950 font-bold text-xs px-3 py-1 rounded-bl-lg">RECOMENDADA</div>
+                        <h4 class="text-base font-bold text-amber-400">⚔️ Rama de Armas (Arms)</h4>
+                        <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+                            <em>Maestría Táctica</em> te deja cambiar de Batalla a Defensiva manteniendo hasta 25 de Ira: carga, cambia a defensiva e inicia con <em>Hender Armadura</em> o <em>Grito desmoralizador</em>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-5">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 border-b border-slate-700 pb-3">
+                    <h3 class="text-base font-bold text-amber-400">Distribución Sugerida de Talentos</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="updateTalentView(22)" id="btn-lvl-22" class="px-3 py-1.5 bg-amber-500 text-slate-950 font-bold text-xs rounded-lg">Nivel 22 (13 Pts)</button>
+                        <button onclick="updateTalentView(30)" id="btn-lvl-30" class="px-3 py-1.5 bg-slate-700 text-slate-200 font-bold text-xs rounded-lg">Proyección Nivel 30 (21 Pts)</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="talent-tree-grid"></div>
+            </div>
+        </div>
+
+        <!-- ============ EQUIPO BIS ============ -->
+        <div id="tab-herreria" class="space-y-6 hidden">
+            <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-5 shadow-lg">
+                <h2 class="text-lg font-bold text-amber-400 mb-3">Equipamiento BiS (Nivel 20-30)</h2>
+                <div id="gear-progreso"></div>
+            </div>
+            <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-5">
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-950 text-amber-400 uppercase tracking-wider border-b border-slate-700">
+                                <th class="p-3">✔</th><th class="p-3">Ranura</th><th class="p-3">Objeto</th><th class="p-3">Tipo</th>
+                                <th class="p-3">Fuente</th><th class="p-3">Estadísticas</th><th class="p-3">Prioridad</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gear-table-body" class="divide-y divide-slate-700/60 text-slate-300 font-medium"></tbody>
+                    </table>
+                </div>
+                <p class="text-[11px] text-slate-500 mt-3">Estadísticas de la guía original; verifícalas en el juego. Para la ruta de herrería ve a <button onclick="switchTab('tab-progreso')" class="text-amber-400 underline">Mi Progreso</button>.</p>
+            </div>
+        </div>
+
+        <!-- ============ RUTA ============ -->
+        <div id="tab-ruta" class="space-y-6 hidden">
+            <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-5 shadow-lg">
+                <h2 class="text-lg font-bold text-amber-400 mb-1">Ruta de Leveo Alianza: 18 a 35</h2>
+                <p class="text-xs text-slate-400">Se abre en la fase de tu nivel actual. Marca las tareas al completarlas.</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3" id="zone-timeline-buttons"></div>
+            <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-6" id="zone-detail-card"></div>
+        </div>
+
+    </main>
+
+    <footer class="bg-slate-950 border-t border-slate-800 py-6 text-center text-xs text-slate-500">
+        <p>Guía personal de Guerrero — World of Warcraft: Forever. Progreso guardado en este navegador.</p>
+    </footer>
+
+    <div id="toast" class="hidden" role="status" aria-live="polite"></div>
+
+    <script src="js/guia.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
