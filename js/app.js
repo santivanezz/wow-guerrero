@@ -422,17 +422,79 @@ function renderMacros() {
   }).join('');
 }
 
-// ---------- TECLAS ----------
+// ---------- TECLAS (una macro por botón, según la actitud) ----------
+const ACTITUDES = [['bat', 1, '⚔️ Batalla', 'var(--gold)'], ['def', 2, '🛡️ Defensiva', 'var(--frost)'], ['ber', 3, '🩸 Rabiosa', '#fca5a5']];
+const FILAS_TECLADO = [['base', '', 'Fila principal · tecla sola', 'Tu fila de abajo (M4, M5, 1, 2…). Lo que usas todo el tiempo.'], ['shift', 'S', 'Fila Shift · Shift + tecla', 'Tu fila del medio (SM4, S1…). Secundarias y pull.'], ['alt', 'A', 'Fila Alt · Alt + tecla', 'Tu fila de arriba (AM4, A1…). Pulls especiales y consumibles.']];
+// ¿Ya tienes la habilidad? Con datos del juego se mira tu libro de hechizos.
+function tiene(k) {
+  const h = HAB[k]; if (!h) return false;
+  if (h.lvl > S.personaje.nivel) return false;
+  const vals = Object.values(S.hechizos || {});
+  if (!vals.length || !h.ok) return true;
+  return vals.includes(h.n) || !!S.hechizos[h.id];
+}
+const nomMacro = k => (k === 'shoot' ? '!' : '') + hab(k);
+function macroDeTecla(t) {
+  if (t.txt) return textoMacro(t);
+  if (t.libre) return null;
+  const cl = [];
+  if (t.any) { if (!tiene(t.any)) return null; cl.push(nomMacro(t.any)); }
+  else {
+    const act = ACTITUDES.filter(([c]) => t[c] && tiene(t[c]) && (c !== 'ber' || tiene('berserkerStance')));
+    const distintas = new Set(act.map(([c]) => t[c]));
+    if (act.length >= 2 && distintas.size === 1) {
+      const k = t[act[0][0]];
+      cl.push((t.mo?.includes(k) ? '[@mouseover,harm,nodead][] ' : '') + nomMacro(k));
+    } else act.forEach(([c, n]) => {
+      const k = t[c];
+      cl.push(t.mo?.includes(k) ? `[stance:${n},@mouseover,harm,nodead][stance:${n}] ${nomMacro(k)}` : `[stance:${n}] ${nomMacro(k)}`);
+    });
+    if (!cl.length) return null;
+    if (t.sino) cl.push(hab(t.sino));
+  }
+  return ['#showtooltip', t.atk ? '/startattack' : null, '/cast ' + cl.join('; ')].filter(Boolean).join('\n');
+}
+function copiarTecla(fila, i) {
+  const txt = macroDeTecla(TECLADO[S.spec][fila][i]); if (!txt) return;
+  navigator.clipboard.writeText(txt).then(() => toast('Macro copiada: pégala en /macro')).catch(() => toast('No se pudo copiar', true));
+}
+function selectoresArmas() {
+  const { am, opciones } = armasMacro();
+  const sel = (k, label) => `<label class="block"><span class="lbl">${label}</span><select class="inp" onchange="setArmaMacro('${k}', this.value)"><option value="">—</option>${opciones.map(o => `<option ${o === am[k] ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select></label>`;
+  return `<div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2">${sel('arma1M', 'Arma 1M (tanque)')}${sel('escudo', 'Escudo')}${sel('arma2M', 'Arma 2M (DPS)')}</div>`;
+}
 function renderTeclas() {
-  const nv = S.personaje.nivel;
-  const teclas = ['M4', 'M5', '1', '2', '3', '4', 'Q', 'E', 'R', 'Z', 'X', 'C'];
-  const grupos = [['🖱️ Ratón', ['M4', 'M5']], ['🔢 Números', ['1', '2', '3', '4']], ['🖐️ Q · E · R', ['Q', 'E', 'R']], ['🔻 Z · X · C', ['Z', 'X', 'C']]];
-  const asign = {};
-  teclas.forEach(t => asign[t] = MACROS.filter(m => m.tecla === t && m.spec.includes(S.spec)).sort((a, b) => (a.lvl <= nv) - (b.lvl <= nv) || b.lvl - a.lvl).reverse());
-  $('teclas-grid').innerHTML = grupos.map(([g, ts]) => `<div class="panel"><div class="panel-titulo">${g}</div>${ts.map(t => {
-    const ms = asign[t].filter(m => m.lvl <= nv), fut = asign[t].filter(m => m.lvl > nv);
-    return `<div class="flex gap-3 items-start mb-3"><span class="tecla">${t}</span><div class="text-sm">${ms.length ? ms.map(m => `<div class="ice">${esc(m.titulo)}</div>`).join('') : '<div class="muted">Libre</div>'}${fut.map(m => `<div class="text-xs muted">nv ${m.lvl}: ${esc(m.titulo)}</div>`).join('')}</div></div>`;
-  }).join('')}</div>`).join('');
+  const ORDEN = ['M4', 'M5', '1', '2', '3', '4', 'Q', 'E', 'R', 'Z', 'X', 'C'];
+  const fila = (etq, color, texto, futuro) => `<div class="flex gap-2 items-center text-sm py-0.5" style="${futuro ? 'opacity:.5' : ''}"><span class="w-24 shrink-0 text-xs font-semibold" style="color:${color}">${etq}</span><span class="ice">${texto}</span></div>`;
+  const celda = k => `<span class="inline-flex items-center gap-2">${habHTML(k, 'sm')} ${esc(hab(k))}${tiene(k) ? '' : ` <span class="chip warn">nv ${HAB[k].lvl}</span>`}</span>`;
+  const tarjeta = (clave, pref, lista, t) => {
+    const i = lista.indexOf(t), macro = macroDeTecla(t);
+    let filas = '';
+    if (t.filas) filas = t.filas.map(([e, x]) => fila(e, 'var(--muted)', esc(x))).join('');
+    else if (t.libre) filas = fila('Sugerencia', 'var(--muted)', esc(t.libre));
+    else if (t.any) filas = fila('Siempre', 'var(--muted)', celda(t.any), !tiene(t.any));
+    else ACTITUDES.forEach(([c, , etq, color]) => { if (t[c] && (c !== 'ber' || S.personaje.nivel >= 26)) filas += fila(etq, color, celda(t[c]), !tiene(t[c]) || (c === 'ber' && !tiene('berserkerStance'))); });
+    return `<div class="panel macro" style="padding:.9rem">
+      <div class="flex items-start gap-3 mb-2"><span class="tecla" style="min-width:2.8rem;height:2.6rem;font-size:.85rem">${pref}${t.t}</span>
+        <div class="flex-1 min-w-0">${filas}${t.nota ? `<div class="text-xs muted mt-1">${esc(t.nota)}</div>` : ''}</div>
+        ${macro ? `<button class="btn peq" onclick="copiarTecla('${clave}', ${i})">Copiar</button>` : ''}</div>
+      ${t.armas ? selectoresArmas() : ''}
+      ${macro ? `<pre>${esc(macro)}</pre>` : t.libre ? '' : '<p class="text-xs muted">Libre hasta que aprendas la habilidad.</p>'}</div>`;
+  };
+  // Mapa visual de las 3 filas, igual que tus barras
+  const mini = (clave, pref) => { const lista = TECLADO[S.spec][clave]; return ORDEN.map(k => { const t = lista.find(x => x.t === k); const h = t && (t.any || t.def || t.bat); const ic = t && !t.txt && !t.libre && h ? HAB[h].i : t && t.txt ? 'inv_misc_note_01' : null; return `<div class="ranura" style="${ic ? `background-image:url('https://wow.zamimg.com/images/wow/icons/large/${ic}.jpg')` : ''}" title="${pref}${k}"><span class="n" style="left:3px;right:auto;top:1px;bottom:auto">${pref}${k}</span></div>`; }).join(''); };
+  $('teclas-grid').innerHTML = `
+    <div class="panel">
+      <h2 class="panel-titulo">Teclas de ${ARBOLES[S.spec].nombre} <span class="sub">tus 3 filas de 12 botones · una macro por botón</span></h2>
+      <div style="max-width:640px" class="space-y-1.5 mb-4">${[['alt', 'A'], ['shift', 'S'], ['base', '']].map(([c, p]) => `<div class="ranuras" style="grid-template-columns:repeat(12,1fr)">${mini(c, p)}</div>`).join('')}</div>
+      <ol class="text-sm space-y-1 list-decimal pl-5">
+        <li>En el juego escribe <code class="frost">/macro</code> → <b>Nueva</b>, pulsa <b>Copiar</b> aquí y pega el texto.</li>
+        <li>Arrastra la macro al botón que indica la etiqueta (<b>M4</b>, <b>SM4</b>, <b>AM4</b>…), igual que en tus barras.</li>
+        <li>La macro de la fila principal hace sola lo correcto: en <span class="gold">Actitud de batalla</span> lanza una habilidad y en <span class="frost">Actitud defensiva</span> otra. El icono también cambia. Si tu barra cambia al cambiar de actitud, pon la misma macro en el mismo botón en las dos.</li>
+      </ol>
+      <p class="text-xs muted mt-2">Solo usan habilidades que ya tienes${Object.keys(S.hechizos || {}).length ? ' (leídas de tu libro de hechizos con GuerreroSync)' : ''}. Al subir de nivel se actualizan solas: vuelve a copiar la macro cuando aparezca una habilidad nueva.</p>
+    </div>
+    ${FILAS_TECLADO.map(([clave, pref, titulo, sub]) => { const lista = TECLADO[S.spec][clave]; return `<div><h3 class="titulo ice text-base mb-1">${titulo}</h3><p class="text-xs muted mb-3">${sub}</p><div class="grid grid-cols-1 lg:grid-cols-2 gap-4">${ORDEN.map(k => lista.find(t => t.t === k)).filter(Boolean).map(t => tarjeta(clave, pref, lista, t)).join('')}</div></div>`; }).join('')}`;
 }
 
 // ---------- MAZMORRAS ----------

@@ -31,7 +31,7 @@ const HAB = {
   cleave:        { id: 845,   n: 'Rajar',                  i: 'ability_warrior_cleave', ok: 1, lvl: 20 },
   victory:       { id: 34428, n: 'Ataque de la victoria',  i: 'ability_warrior_devastate', ok: 1, lvl: 20 },
   retaliation:   { id: 20230, n: 'Represalias',            i: 'ability_warrior_challange', ok: 1, lvl: 20 },
-  slam:          { id: 1464,  n: 'Embate',                 i: 'ability_warrior_decisivestrike', lvl: 20 },
+  slam:          { id: 1464,  n: 'Embate',                 i: 'ability_warrior_decisivestrike', ok: 1, lvl: 20 },
   mockingBlow:   { id: 694,   n: 'Falsa arremetida',       i: 'ability_warrior_punishingblow', ok: 1, lvl: 16 },
   execute:       { id: 5308,  n: 'Ejecutar',               i: 'inv_sword_48', lvl: 24 },
   shieldWall:    { id: 871,   n: 'Muro de escudo',         i: 'ability_warrior_shieldwall', lvl: 28 },
@@ -42,6 +42,7 @@ const HAB = {
   intimidating:  { id: 5246,  n: 'Grito intimidador',      i: 'ability_golemthunderclap', lvl: 22 },
   challenging:   { id: 1161,  n: 'Grito desafiante',       i: 'ability_bullrush', lvl: 26 },
   recklessness:  { id: 1719,  n: 'Temeridad',              i: 'ability_criticalstrike', lvl: 50 },
+  shoot:         { id: 7918,  n: 'Disparar arma de fuego', i: 'ability_marksmanship', ok: 1, lvl: 1 },
   stoneform:     { id: 20594, n: 'Forma de piedra',        i: 'spell_shadow_unholystrength', ok: 1, lvl: 1 },
   // Talentos activos
   sweeping:      { id: 12292, n: 'Golpes de barrido',      i: 'ability_rogue_slicedice', lvl: 30 },
@@ -202,70 +203,112 @@ const ROTACIONES = {
   ]}
 };
 
-// ---------- Macros ----------
-// {clave} se reemplaza por el nombre de la habilidad en TU cliente.
-// tecla = sugerencia según tu esquema (1-4, Q E R, Z X C, Mouse 4/5).
+// ---------- Teclas: 3 filas de 12 botones (tecla sola, Shift+tecla, Alt+tecla) ----------
+// bat / def / ber = habilidad en Actitud de batalla / defensiva / rabiosa.
+// any = misma habilidad en cualquier actitud. sino = qué lanzar si no estás en la actitud correcta.
+// mo = habilidades que apuntan al enemigo bajo el ratón. atk = añade /startattack.
+// txt = macro escrita a mano. libre = sugerencia sin macro (arrastra el objeto).
+// La macro de cada botón se genera sola con las habilidades que YA tienes.
+const TXT_MODO = '#showtooltip\n/cast [stance:1] {defStance}; {battleStance}\n/equipslot [stance:1] 16 {arma1M}\n/equipslot [stance:1] 17 {escudo}\n/equipslot [stance:2] 16 {arma2M}';
+const T_MODO = { t: 'R', txt: TXT_MODO, armas: true, filas: [['⚔️ Batalla', 'Pasa a Defensiva y equipa 1M + escudo'], ['🛡️ Defensiva', 'Pasa a Batalla y equipa tu arma 2M']] };
+const T_GRITO = { t: 'Z', txt: '#showtooltip {battleShout}\n/cast {bloodrage}\n/cast {battleShout}', filas: [['Siempre', 'Ira sangrienta + Grito de batalla (un clic: ira y grito)']] };
+const T_PIEDRA = { t: 'C', any: 'stoneform', nota: 'Racial de enano: quita veneno, enfermedad y sangrado.' };
+const FILA_SHIFT = [
+  { t: 'M4', any: 'shoot', nota: 'Pull a distancia con la escopeta (mínimo 8 m). El "!" evita que un segundo clic apague el disparo.' },
+  { t: 'M5', bat: 'mockingBlow', sino: 'battleStance', atk: 1, nota: 'Segundo "provocar" (6 s). Solo en Batalla: si no, el primer clic cambia de actitud.' },
+  { t: '4', any: 'demoShout', nota: 'Al empezar cada pull: todos los enemigos pegan menos.' },
+  { t: 'Z', any: 'battleShout', nota: 'Solo el grito, para renovarlo en combate.' },
+  { t: 'X', any: 'bloodrage', nota: 'Solo la ira (cuesta un poco de vida).' },
+  { t: 'C', bat: 'retaliation', sino: 'battleStance', nota: 'Devuelve cada golpe durante 15 s (30 min de espera). Para cuando te pegan muchos a la vez.' }
+];
+const FILA_ALT = [
+  { t: 'M4', txt: '#showtooltip {shoot}\n/tm 8\n/cast !{shoot}', filas: [['Siempre', 'Marca calavera y dispara: el grupo sabe a quién pegar']] },
+  { t: 'M5', txt: '#showtooltip {shoot}\n/cast [nostance:2] {defStance}; !{shoot}', filas: [['Pull de tanque', '1er clic: Actitud defensiva · 2º clic: dispara']] },
+  { t: '1', libre: 'Vendas (arrastra el objeto)' },
+  { t: '2', libre: 'Poción de sanación' },
+  { t: '3', libre: 'Comida' },
+  { t: '4', libre: 'Piedra de afilar / de peso (herrería)' },
+  { t: 'Q', libre: 'Pico de minero o montura (nv 40)' },
+  { t: 'C', libre: 'Piedra de hogar' }
+];
+const TECLADO = {
+  prot: {
+    base: [
+      { t: 'M4', bat: 'charge', def: 'taunt', mo: ['taunt'], atk: 1, nota: 'Batalla: entra cargando. Defensiva: recupera al mob que se escapa (vale sobre el enemigo bajo el ratón).' },
+      { t: 'M5', bat: 'shieldBash', def: 'shieldBash', mo: ['shieldBash'], nota: 'Corta hechizos (necesita escudo). Vale sobre el enemigo bajo el ratón.' },
+      { t: '1', bat: 'rend', def: 'sunder', atk: 1 },
+      { t: '2', bat: 'overpower', def: 'revenge', atk: 1, nota: 'Revancha se ilumina al bloquear, esquivar o parar: úsala siempre.' },
+      { t: '3', bat: 'heroic', def: 'shieldBlock', nota: 'Bloqueo con escudo activa Revancha y te da ira.' },
+      { t: '4', bat: 'thunderClap', def: 'thunderClap', nota: 'Amenaza en área y los enemigos atacan más lento.' },
+      { t: 'Q', bat: 'hamstring', def: 'disarm', nota: 'Seccionar frena al que huye. Desarmar contra jefes con arma.' },
+      { t: 'E', bat: 'cleave', def: 'cleave', atk: 1, nota: 'Con 2 o más enemigos y ira de sobra.' },
+      T_MODO, T_GRITO,
+      { t: 'X', bat: 'victory', def: 'victory', atk: 1, nota: 'Gratis y cura 10% tras matar algo.' },
+      T_PIEDRA
+    ],
+    shift: [...FILA_SHIFT,
+      { t: '1', any: 'rend', atk: 1, nota: 'Desgarrar sin salir de Defensiva (jefes y élites).' },
+      { t: '3', any: 'heroic', atk: 1, nota: 'Golpe heroico en Defensiva cuando te sobra ira.' },
+      { t: 'E', bat: 'slam', def: 'slam', atk: 1 }
+    ],
+    alt: FILA_ALT
+  },
+  arms: {
+    base: [
+      { t: 'M4', bat: 'charge', def: 'taunt', ber: 'intercept', mo: ['taunt'], atk: 1 },
+      { t: 'M5', bat: 'victory', def: 'shieldBash', ber: 'pummel', mo: ['shieldBash', 'pummel'], atk: 1, nota: 'Batalla: cura gratis tras matar. Defensiva: corta hechizos (con escudo).' },
+      { t: '1', bat: 'rend', def: 'sunder', ber: 'whirlwind', atk: 1 },
+      { t: '2', bat: 'overpower', def: 'revenge', atk: 1, nota: 'Abrumar: 5 de ira, lo mejor que tienes cuando el enemigo esquiva.' },
+      { t: '3', bat: 'heroic', def: 'shieldBlock', ber: 'heroic', nota: 'Golpe heroico solo con ira sobrante.' },
+      { t: '4', bat: 'thunderClap', def: 'thunderClap' },
+      { t: 'Q', bat: 'hamstring', def: 'disarm', ber: 'hamstring' },
+      { t: 'E', bat: 'slam', def: 'cleave', ber: 'slam', atk: 1, nota: 'Embate justo después de un golpe automático.' },
+      T_MODO, T_GRITO,
+      { t: 'X', bat: 'execute', ber: 'execute', atk: 1, nota: 'Por debajo del 20% de vida.' },
+      T_PIEDRA
+    ],
+    shift: [...FILA_SHIFT,
+      { t: '1', any: 'sunder', atk: 1, nota: 'Hender armadura en élites y jefes.' },
+      { t: '3', any: 'cleave', atk: 1, nota: 'Rajar con 2 enemigos.' }
+    ],
+    alt: FILA_ALT
+  },
+  fury: {
+    base: [
+      { t: 'M4', bat: 'charge', def: 'taunt', ber: 'intercept', mo: ['taunt'], atk: 1 },
+      { t: 'M5', bat: 'victory', def: 'shieldBash', ber: 'pummel', mo: ['shieldBash', 'pummel'], atk: 1 },
+      { t: '1', bat: 'rend', def: 'sunder', ber: 'whirlwind', atk: 1 },
+      { t: '2', bat: 'overpower', def: 'revenge', ber: 'bloodthirst', atk: 1 },
+      { t: '3', bat: 'heroic', def: 'shieldBlock', ber: 'heroic' },
+      { t: '4', bat: 'thunderClap', def: 'thunderClap' },
+      { t: 'Q', bat: 'hamstring', def: 'disarm', ber: 'hamstring' },
+      { t: 'E', bat: 'cleave', def: 'cleave', ber: 'cleave', atk: 1 },
+      T_MODO, T_GRITO,
+      { t: 'X', bat: 'execute', ber: 'execute', atk: 1, nota: 'Por debajo del 20% de vida.' },
+      T_PIEDRA
+    ],
+    shift: [...FILA_SHIFT,
+      { t: '1', any: 'sunder', atk: 1 },
+      { t: 'E', bat: 'slam', def: 'slam', ber: 'slam', atk: 1 }
+    ],
+    alt: FILA_ALT
+  }
+};
+
+// ---------- Macros para más adelante (sustituyen a las de una tecla al subir de nivel) ----------
 const MACROS = [
-  { id: 'iniciador', titulo: 'Iniciador inteligente', tecla: 'M4', spec: ['prot','arms','fury'], lvl: 4,
-    desc: 'Fuera de combate: cambia a Batalla si hace falta y Carga. Activa el autoataque.',
-    txt: '#showtooltip {charge}\n/startattack\n/cast [nocombat,stance:1] {charge}; [nocombat] {battleStance}' },
-  { id: 'iniciador30', titulo: 'Cargar / Interceptar', tecla: 'M4', spec: ['arms','fury'], lvl: 30,
-    desc: 'Fuera de combate Carga; en combate cambia a Rabiosa e Intercepta. Una sola tecla para acercarte siempre.',
-    txt: '#showtooltip\n/startattack\n/cast [nocombat,stance:1] {charge}; [nocombat] {battleStance}; [stance:3] {intercept}; {berserkerStance}' },
-  { id: 'vanguard', titulo: 'Cargar tanque (con Vanguard)', tecla: 'M4', spec: ['prot'], lvl: 25,
-    desc: 'Con el talento Vanguard cargas en Actitud defensiva sin perder ira.',
-    txt: '#showtooltip {charge}\n/startattack\n/cast [nocombat,stance:1/2] {charge}; [@mouseover,harm,nodead][] {taunt}' },
-  { id: 'abrumar', titulo: 'Abrumar con cambio de actitud', tecla: '2', spec: ['arms','fury','prot'], lvl: 12,
-    desc: 'Si no estás en Batalla, primer clic cambia de actitud, segundo clic Abrumar.',
-    txt: '#showtooltip {overpower}\n/startattack\n/cast [stance:1] {overpower}; {battleStance}' },
-  { id: 'revancha', titulo: 'Revancha', tecla: '2', spec: ['prot'], lvl: 14,
-    desc: 'Revancha en Defensiva; si estás en otra actitud, cambia primero.',
-    txt: '#showtooltip {revenge}\n/startattack\n/cast [stance:2] {revenge}; {defStance}' },
-  { id: 'bloqueo', titulo: 'Bloqueo con escudo', tecla: '3', spec: ['prot'], lvl: 16,
-    desc: 'Activa Revancha y da ira con Shield Specialization.',
-    txt: '#showtooltip {shieldBlock}\n/cast [stance:2] {shieldBlock}; {defStance}' },
-  { id: 'interrumpir', titulo: 'Interrumpir (mouseover)', tecla: 'M5', spec: ['prot','arms','fury'], lvl: 12,
-    desc: 'Azote de escudo al enemigo bajo el ratón sin cambiar de objetivo (Icy Veins). Requiere escudo.',
-    txt: '#showtooltip {shieldBash}\n/cast [@mouseover,harm,nodead][] {shieldBash}' },
-  { id: 'zurrar', titulo: 'Zurrar (mouseover)', tecla: 'M5', spec: ['arms','fury'], lvl: 30,
-    desc: 'Interrupción sin escudo en Actitud rabiosa; cambia de actitud si hace falta.',
-    txt: '#showtooltip {pummel}\n/cast [stance:3,@mouseover,harm,nodead][stance:3] {pummel}; {berserkerStance}' },
-  { id: 'provocar', titulo: 'Provocar (mouseover)', tecla: 'Q', spec: ['prot'], lvl: 10,
-    desc: 'Recupera el mob que se escapa sin perder tu objetivo.',
-    txt: '#showtooltip {taunt}\n/cast [@mouseover,harm,nodead][] {taunt}' },
-  { id: 'hender', titulo: 'Hender + autoataque', tecla: '1', spec: ['prot'], lvl: 10,
-    desc: 'Nunca te quedas quieto sin golpear.',
-    txt: '#showtooltip {sunder}\n/startattack\n/cast {sunder}' },
-  { id: 'desgarrar', titulo: 'Desgarrar + autoataque', tecla: '1', spec: ['arms','fury'], lvl: 4,
-    desc: 'Clave para Bloodthrill en Armas.',
-    txt: '#showtooltip {rend}\n/startattack\n/cast [stance:1/2] {rend}; {battleStance}' },
-  { id: 'heroico', titulo: 'Golpe heroico / Rajar', tecla: '3', spec: ['arms','fury'], lvl: 20,
-    desc: 'Shift = Rajar (varios enemigos). Úsalo solo con ira sobrante.',
-    txt: '#showtooltip\n/startattack\n/cast [mod:shift] {cleave}; {heroic}' },
-  { id: 'victoria', titulo: 'Ataque de la victoria', tecla: 'M5', spec: ['arms','fury','prot'], lvl: 20,
-    desc: 'Gratis y cura 10%. En DPS ponlo en M5; en tanque, donde quieras.',
-    txt: '#showtooltip {victory}\n/startattack\n/cast {victory}' },
-  { id: 'apertura', titulo: 'Ira sangrienta + Grito de batalla', tecla: 'Z', spec: ['arms','fury','prot'], lvl: 10,
-    desc: 'Ira sangrienta no gasta tiempo global: un clic = ira + grito.',
-    txt: '#showtooltip {battleShout}\n/cast {bloodrage}\n/cast {battleShout}' },
-  { id: 'atronar', titulo: 'Atronar', tecla: '4', spec: ['prot','arms'], lvl: 6,
-    desc: 'En Forever se puede usar en Batalla y Defensiva (CD 6 s).',
-    txt: '#showtooltip {thunderClap}\n/cast [stance:1/2] {thunderClap}; {battleStance}' },
-  { id: 'ejecutar', titulo: 'Ejecutar', tecla: 'E', spec: ['arms','fury'], lvl: 24,
-    desc: 'Funciona en Batalla y Rabiosa; cambia si estás en Defensiva.',
-    txt: '#showtooltip {execute}\n/cast [stance:1/3] {execute}; {battleStance}' },
-  { id: 'emergencia', titulo: 'Botón de pánico', tecla: 'C', spec: ['prot','arms','fury'], lvl: 28,
-    desc: 'Forma de piedra (enano) + Muro de escudo. Shift = solo Forma de piedra.',
-    txt: '#showtooltip\n/cast {stoneform}\n/cast [nomod,stance:2] {shieldWall}; [nomod] {defStance}' },
-  { id: 'seccionar', titulo: 'Seccionar (mobs que huyen)', tecla: 'Q', spec: ['arms','fury'], lvl: 8,
-    desc: 'Los humanoides huyen al 15%: frénalos antes de que traigan amigos.',
-    txt: '#showtooltip {hamstring}\n/cast [stance:1/3] {hamstring}; {battleStance}' },
-  { id: 'rabia', titulo: 'Romper miedo (Ira rabiosa)', tecla: 'X', spec: ['arms','fury','prot'], lvl: 30,
-    desc: 'Inmune a miedo. También genera ira.',
-    txt: '#showtooltip {berserkerRage}\n/cast [stance:3] {berserkerRage}; {berserkerStance}' },
   { id: 'modo', titulo: 'Modo Tanque ⇄ DPS (cambia arma y actitud)', tecla: 'R', spec: ['prot','arms','fury'], lvl: 10, personal: true,
-    desc: 'Usa TUS armas (de tu SimC/addon). En Batalla → pasa a Defensiva y equipa 1M + escudo; en Defensiva → Batalla y arma 2M.',
-    txt: '#showtooltip\n/cast [stance:1] {defStance}; {battleStance}\n/equipslot [stance:1] 16 {arma1M}\n/equipslot [stance:1] 17 {escudo}\n/equipslot [stance:2] 16 {arma2M}' }
+    desc: 'En Batalla → pasa a Defensiva y equipa 1M + escudo; en Defensiva → Batalla y arma 2M. Usa los nombres de TUS armas.',
+    txt: TXT_MODO },
+  { id: 'vanguard', titulo: 'Cargar en Defensiva (talento Vanguard)', tecla: 'M4', spec: ['prot'], lvl: 25,
+    desc: 'Cuando tomes Vanguard (nv 25) podrás cargar sin salir de Actitud defensiva. Sustituye la macro de M4.',
+    txt: '#showtooltip\n/startattack\n/cast [nocombat] {charge}; [@mouseover,harm,nodead][] {taunt}' },
+  { id: 'emergencia', titulo: 'Botón de pánico', tecla: 'C', spec: ['prot','arms','fury'], lvl: 28,
+    desc: 'Forma de piedra + Muro de escudo (nv 28). Sustituye la macro de C.',
+    txt: '#showtooltip\n/cast {stoneform}\n/cast [stance:2] {shieldWall}; {defStance}' },
+  { id: 'rabia', titulo: 'Romper miedo (Ira rabiosa)', tecla: 'AX', spec: ['arms','fury','prot'], lvl: 30,
+    desc: 'Inmune a miedo y genera ira. Requiere Actitud rabiosa.',
+    txt: '#showtooltip {berserkerRage}\n/cast [stance:3] {berserkerRage}; {berserkerStance}' }
 ];
 
 // ---------- Equipo para tu rango (Icy Veins leveo, IDs de Wowhead Forever) ----------

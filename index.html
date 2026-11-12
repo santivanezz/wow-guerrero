@@ -11,7 +11,7 @@
   <script src="https://cdn.tailwindcss.com/3.4.16"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script>window.whTooltips ={ colorLinks: false, iconizeLinks: false, renameLinks: false };</script>
-  <link rel="stylesheet" href="css/lichking.css?v=4">
+  <link rel="stylesheet" href="css/lichking.css?v=5">
 </head>
 <body>
   <canvas id="nieve" aria-hidden="true"></canvas>
@@ -38,8 +38,8 @@
           <button class="pestana" data-tab="comparador" onclick="switchTab('comparador')">Comparador</button>
           <button class="pestana" data-tab="talentos" onclick="switchTab('talentos')">Talentos</button>
           <button class="pestana" data-tab="rotacion" onclick="switchTab('rotacion')">Rotación</button>
-          <button class="pestana" data-tab="macros" onclick="switchTab('macros')">Macros</button>
-          <button class="pestana" data-tab="teclas" onclick="switchTab('teclas')">Teclas</button>
+          <button class="pestana" data-tab="macros" onclick="switchTab('macros')">Macros futuras</button>
+          <button class="pestana" data-tab="teclas" onclick="switchTab('teclas')">Teclas y macros</button>
           <button class="pestana" data-tab="mazmorras" onclick="switchTab('mazmorras')">Mazmorras</button>
           <button class="pestana" data-tab="diario" onclick="switchTab('diario')">Diario</button>
           <button class="pestana" data-tab="sync" onclick="switchTab('sync')">⟳ Sincronizar</button>
@@ -100,8 +100,8 @@
     <!-- MACROS -->
     <section id="tab-macros" class="hidden space-y-4">
       <div class="panel">
-        <h2 class="panel-titulo">Macros para tu especialización</h2>
-        <p class="text-sm mb-2">Crea la macro en el juego con <code class="frost">/macro</code> → Nueva, pega el texto y arrástrala a la tecla indicada. Usan la sintaxis moderna del cliente de Forever (<code class="frost">[stance]</code>, <code class="frost">[@mouseover]</code>).</p>
+        <h2 class="panel-titulo">Macros para más adelante</h2>
+        <p class="text-sm mb-2">Las macros de cada botón están en <b>Teclas y macros</b>. Aquí van las que sustituyen a alguna cuando subas de nivel. Crea la macro en el juego con <code class="frost">/macro</code> → Nueva, pega el texto y arrástrala a la tecla indicada. Usan la sintaxis moderna del cliente de Forever (<code class="frost">[stance]</code>, <code class="frost">[@mouseover]</code>).</p>
         <div id="macros-aviso"></div>
       </div>
       <div id="macros-lista" class="grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
@@ -109,7 +109,7 @@
 
     <!-- TECLAS -->
     <section id="tab-teclas" class="hidden space-y-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="teclas-grid"></div>
+      <div id="teclas-grid" class="space-y-6"></div>
       <div class="panel text-sm"><b class="frost titulo">Consejo de movimiento:</b> pon A y D como desplazamiento lateral y gira con clic derecho. Así Q y E quedan libres para habilidades sin perder control.</div>
     </section>
 
@@ -184,11 +184,11 @@
   <footer class="capa text-center text-xs muted py-8">Guía personal de Guerrero · WoW Forever 1.60.1 · Datos de Wowhead, Icy Veins, Maxroll y talentsforever.com</footer>
   <div id="toast" class="hidden" role="status" aria-live="polite"></div>
 
-  <script src="js/wowhead-data.js?v=4"></script>
-  <script src="js/guia.js?v=4"></script>
-  <script src="js/item-stats.js?v=4"></script>
-  <script src="js/sync.js?v=4"></script>
-  <script src="js/app.js?v=4"></script>
+  <script src="js/wowhead-data.js?v=5"></script>
+  <script src="js/guia.js?v=5"></script>
+  <script src="js/item-stats.js?v=5"></script>
+  <script src="js/sync.js?v=5"></script>
+  <script src="js/app.js?v=5"></script>
   <script src="https://wow.zamimg.com/js/tooltips.js"></script>
 </body>
 </html>
