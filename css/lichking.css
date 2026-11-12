@@ -113,6 +113,7 @@ a { color: var(--frost); }
 
 /* ---------- Iconos ---------- */
 .icono {
+  display: inline-block; vertical-align: middle;
   width: 36px; height: 36px; border-radius: 6px; flex-shrink: 0; border: 1px solid #000;
   outline: 1px solid rgba(143, 214, 255, .35); box-shadow: 0 0 8px rgba(0,0,0,.8), inset 0 0 0 1px rgba(255,255,255,.08);
   background: #000 center/cover;
